@@ -28,7 +28,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \setmathfont{XITS Math}
 
 
-\title{Simulations with MPS/MPO}
+\title{Simulations with MPS}
 \author{Kunyang DU}
 \institute{Institue of Theoretical Physics}
 \date{\today}
@@ -96,13 +96,13 @@ height=9,scale=0.5,debug]{beamerposter}
 
 
 \begin{frame}
-	\frametitle{TDVP}
+	\frametitle{TDVP: 1-site integration}
 	\begin{itemize}
 		\item Initialize MPS with diagonalization center at $i=1$.
 		\newpage
 		\item Sweep at two direction (right - left - right - \dots)
 		\begin{itemize}
-			\item Calculate the left/right environment $H_L/H_R$.
+			\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
 			\begin{figure}[H]
 				\includegraphics[width=0.8 \linewidth]{images/LRenv1 t.pdf}
 			\end{figure}
@@ -111,7 +111,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \end{frame}
 
 \begin{frame}
-	\frametitle{TDVP}
+	\frametitle{TDVP: 1-site integration}
 	\begin{itemize}
 		\item Sweep at two direction (right - left - right - \dots)
 		\begin{itemize}
@@ -127,6 +127,34 @@ height=9,scale=0.5,debug]{beamerposter}
 				\subfigure{\includegraphics[height=0.21\linewidth]{images/effH0 t.pdf}}
 			\end{figure}
 		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{TDVP: 2-site integration}
+	Sweep schemes
+	\begin{itemize}
+		\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
+		\begin{figure}[H]
+			\includegraphics[width=0.8 \linewidth]{images/LRenv2 t.pdf}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{TDVP: 2-site integration}
+	Sweep schemes
+	\begin{itemize}
+		\item Calculate the effective Hamiltonian $H_{eff}^{(2)}$
+		\item Time evolution $A_iA_{i+1}(t+\Delta t/2) = \exp(-iH_{eff}^{(2)}\Delta t / 2)A_iA_{i+1}(t)$ 
+		\item OrientSVD and calculate the center with inverse evolution $A_{i+1}(t) = \exp(iH_{eff}^{(1)}\Delta t /2) A_{i+1}(t+\Delta t/2)$, then regard it as nextsite.
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH2 t.pdf}}
+			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH1 t.pdf}}
+		\end{figure}
 	\end{itemize}
 \end{frame}
 
