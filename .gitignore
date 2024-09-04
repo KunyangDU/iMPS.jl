@@ -23,3 +23,5 @@ Lattices
 *.toc
 
 *.agx
+
+example/
