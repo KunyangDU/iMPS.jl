@@ -3,7 +3,7 @@ using TensorKit,LinearAlgebra,JLD2
 include("../iMPS/iMPS.jl")
 include("model.jl")
 
-L = 12
+L = 20
 
 d = 2
 D_MPO = 3
@@ -11,7 +11,7 @@ D_MPS = 2^4
 
 J = -1.0
 
-for h in -2.0:0.2:2.0
+for h in -2.0:0.1:2.0
     
     H = IsingHam(L;J=J,h=h)
     ψ = initialMPS(L,d,D_MPS)

@@ -28,7 +28,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \setmathfont{XITS Math}
 
 
-\title{Simulations with MPS}
+\title{Simulations with MPS/MPO}
 \author{Kunyang DU}
 \institute{Institue of Theoretical Physics}
 \date{\today}
@@ -44,21 +44,100 @@ height=9,scale=0.5,debug]{beamerposter}
 	\begin{itemize}
 		\item \textbf{Hamiltonian:} Transverse Ising Model
 		\begin{equation}
-			H = J\sum_{i}^{N-1}\sigma_i \sigma_{i+1} + h\sum_i^N\sigma_i
+			H = J\sum_{i=1}^{N-1}\sigma_i^z \sigma_{i+1}^z +h\sum_i^N\sigma_{i=1}^x+ h_z\sum_{i=1}^N\sigma_i^z
 		\end{equation}
 		\item \textbf{Parameters} Physics parameters:
 		\begin{equation}
-			J = 1.0,\quad h = 0.5,\quad N = 12
-		\end{equation}
-		Numerical parameters:
-		\begin{equation}
-			d = 2,\quad D_{MPO} = 3, \quad D_{MPS} = 128
+			J = \pm 1.0,\quad h = 0.5,\quad N = 12
 		\end{equation}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{DMRG}
+	\frametitle{Model:MPO}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} In kron form:
+		\begin{equation}
+			\begin{aligned}
+				H = & J\sigma_1^z\otimes\sigma_2^z\otimes \mathbb{1}\otimes\mathbb{1}\otimes\cdots + \mathbb{1}\otimes J\sigma_2^z\otimes\sigma_3^z\otimes \mathbb{1}\otimes\cdots\\
+				&+h\sigma_1^x\otimes\mathbb{1}\otimes\mathbb{1}\otimes\cdots + \mathbb{1}\otimes h\sigma_2^x\otimes\mathbb{1}\otimes\cdots \\
+				& + h_z\sigma_1^z\otimes\mathbb{1}\otimes\mathbb{1}\otimes\cdots + \mathbb{1}\otimes h_z\sigma_2^z\otimes\mathbb{1}\otimes\cdots
+			\end{aligned}
+		\end{equation}
+		\item \textbf{MPO} 
+		\begin{equation}
+			\begin{gathered}
+				H_1 = \begin{pmatrix}
+					h\sigma_1^x + h_z \sigma_1^z,& J\sigma_1^z,&\mathbb{1}
+				\end{pmatrix},\\
+				H_i = \begin{pmatrix}
+					\mathbb{1},&\mathbb{0},&\mathbb{0}\\
+					\sigma_i^z,&\mathbb{0},&\mathbb{0}\\
+					h\sigma_i^x + h_z \sigma_i^z,& J\sigma_i^z,&\mathbb{1}
+				\end{pmatrix},\quad 
+				H_N = \begin{pmatrix}
+					\mathbb{1}\\ \sigma_N^z\\h\sigma_N^x + h_z \sigma_N^z
+				\end{pmatrix}
+			\end{gathered}
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:MPO}
+	\begin{itemize}
+		\item \textbf{Total Magnetic Moment:} In kron form:
+		\begin{equation}
+			M_z =\sigma_1^z\otimes\mathbb{1}\otimes\mathbb{1}\otimes\cdots + \mathbb{1}\otimes \sigma_2^z\otimes\mathbb{1}\otimes\cdots
+		\end{equation}
+		\item \textbf{MPO} 
+		\begin{equation}
+			\begin{gathered}
+				H_1 = \begin{pmatrix}
+					\sigma_1^z,&\mathbb{1}
+				\end{pmatrix},\\
+				H_i = \begin{pmatrix}
+					\mathbb{1},&\mathbb{0}\\
+					\sigma_i^z,&\mathbb{1}\\
+				\end{pmatrix},\quad 
+				H_N = \begin{pmatrix}
+					\mathbb{1}\\ \sigma_N^z
+				\end{pmatrix}
+			\end{gathered}
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:MPS}
+	$\ket{s_i}$ denote that site $i$ is in eigenstate of $\sigma_i^z$ with eigenvalue$s_i=\pm 1$.\\
+	$\ket{s_1s_2s_3\cdots s_N}$is corresponding many body basis of system.
+	\begin{itemize}
+		\item \textbf{Random Initialized State:} Random initial state
+		\begin{equation}
+			\psi_0 = \sum_{\{ s_i \}}C_{s_1s_2s_3\cdots s_N}\ket{s_1s_2s_3\cdots s_N}
+		\end{equation}
+		equals the random tensor $C_{s_1s_2s_3\cdots s_N}$. Then orientSVD:
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:MPS}
+	\begin{itemize}
+		\item \textbf{Assigned Initialized State} FM corresponds to state $C_{s_1s_2s_3\cdots s_N}$ with 
+		\begin{equation}
+			C_{111\cdots 1}=1\quad \text{or}\quad  C_{-1-1-1\cdots -1}=1
+		\end{equation}
+		while AFM corresponds to state $C_{s_1s_2s_3\cdots s_N}$ with 
+		\begin{equation}
+			C_{1-11-1\cdots}=1\quad \text{or}\quad  C_{-11-11\cdots}=1
+		\end{equation}
+		Then orientSVD in the same way as that in Random Initialized State.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DMRG: 1-site update}
 	\begin{multicols*}{2}
 	\begin{itemize}
 		\item Initialize MPS with diagonalization center at $i=1$.
@@ -78,7 +157,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \end{frame}
 
 \begin{frame}
-	\frametitle{DMRG}
+	\frametitle{DMRG: 1-site update}
 	\begin{itemize}
 		\item Sweep at two direction (right - left - right - \dots)
 		\begin{itemize}
@@ -108,6 +187,20 @@ height=9,scale=0.5,debug]{beamerposter}
 			\end{figure}
 		\end{itemize}
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\setcounter{subfigure}{0}
+	Simulation results:
+	\begin{figure}[H]
+		\centering
+		\subfigbottomskip=2pt
+		\subfigcapskip=-5pt
+		\subfigure{\includegraphics[height=0.31\linewidth]{images/D=16_L=12_J=-1.0.pdf}}
+		\subfigure{\includegraphics[height=0.31\linewidth]{images/D=16_L=12_J=1.0.pdf}}
+	\end{figure}
+	a quantum phase transition can be observed near $h\sim 1.0$
 \end{frame}
 
 \begin{frame}
