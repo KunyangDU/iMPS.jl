@@ -44,9 +44,13 @@ function IsingMagmom(L::Int64,d::Int64,D_MPO::Int64)
     bond = ℂ^D_MPO
     for i in 1:L
         if i == 1
-            M = TensorMap(vcat(map(x -> x[:],(σz,I))...), phys' → phys'  ⊗ bond)
+            #M = TensorMap(vcat(map(x -> x[:],(σz,I))...), phys' → phys'  ⊗ bond)
+            M = TensorMap(vcat(map(x -> x[:],(σz,I))...), bond' → phys'  ⊗ phys)
+            M = permute(M,(1,3),(2,))
         elseif i == L
-            M = TensorMap(vcat(map(x -> x[:],(I,σz))...), phys' ⊗ bond → phys' )
+            #M = TensorMap(vcat(map(x -> x[:],(I,σz))...), phys' ⊗ bond → phys' )
+            M = TensorMap(vcat(map(x -> x[:],(I,σz))...), bond → phys ⊗ phys' )
+            M = permute(M,(2,),(1,3))
         else
             Hi = [
                 I I0

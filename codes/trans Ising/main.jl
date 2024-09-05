@@ -9,7 +9,7 @@ d = 2
 D_MPO = 3
 D_MPS = 128
 
-lsParams = [(J = 0.0,h = -0.5),(J = 1.0,h = 0.)]
+lsParams = [(J = -1.0,h = 0.)]
 
 for params in lsParams
     
