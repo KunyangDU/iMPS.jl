@@ -59,12 +59,13 @@ function sweep1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS::In
         for iL in 1:L-1
             Eg, ψ[iL:iL+1] = update1(ψ,H,iL,LanczosLevel,"right")
         end
+        println("right sweep finished")
         for iL in L:-1:2
             Eg, ψ[iL-1:iL] = update1(ψ,H,iL,LanczosLevel,"left")
         end
-        end_time = time()
+        println("left sweep finished")
+        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2))")
         push!(lsE,Eg)
-        println("sweep $i finished, Eg = $Eg, time consumed $(round(end_time-start_time;digits=2))")
     end
 
     return ψ,lsE

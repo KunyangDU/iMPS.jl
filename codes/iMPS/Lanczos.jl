@@ -78,6 +78,7 @@ end
 function groundEig(M::AbstractTensorMap, level::Int)
     T, Q = Lanczos(M, level)
     λ, v = eigen(T)
-    return argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
+    Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
+    return Eg, Ev / norm(Ev)
 end
 

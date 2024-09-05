@@ -3,7 +3,7 @@ function initialMPS(L::Int64,d::Int64,D::Int64)
     
     MPS = let 
         iniMPS = Tensor(rand, ComplexF64, ⊗([ℂ^d for i in 1:L]...)) |> x -> x / norm(x)
-        MPS = Vector{TensorMap}(undef, L)
+        MPS = Vector{AbstractTensorMap}(undef, L)
         for ii in L:-1:2
             if ii == L
                 U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:L))...;trunc = truncdim(D))
@@ -49,6 +49,9 @@ function LeftEnv(ψ::Vector,H::Vector,site::Int64)
 end
 
 function reduHam(ψ::Vector,H::Vector,site::Int64)
+
+    # 缩并顺序可以优化
+
     if site == 1
         HR = RightEnv(ψ,H,site)
         @tensor reduH[-1,-2,-3,-4] ≔ H[site][-1,1,-3]*HR[-2,1,-4]
