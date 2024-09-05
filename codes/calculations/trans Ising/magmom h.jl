@@ -3,12 +3,12 @@ using TensorKit,LinearAlgebra,JLD2
 include("../iMPS/iMPS.jl")
 include("model.jl")
 
-L = 20
+L = 12
 
 J = -1.0
 lsh = collect(-2.0:0.2:2.0)
 
-D_MPS = 2^5
+D_MPS = 2^4
 
 
 lsEg = Vector{Float64}(undef,length(lsh))

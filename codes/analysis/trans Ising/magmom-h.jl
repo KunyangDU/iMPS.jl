@@ -4,7 +4,7 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 #include("../../calculations/trans Ising/model.jl")
 
 L = 12
-J = 1.0
+J = -1.0
 D_MPS = 2^4
 
 @load "trans Ising/data/lsh_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsh
@@ -38,4 +38,4 @@ resize_to_layout!(fig)
 
 display(fig)
 
-save("trans Ising/images/D=$(D_MPS)_L=$(L)_J=$(J).pdf",fig)
+save("trans Ising/figures/D=$(D_MPS)_L=$(L)_J=$(J).pdf",fig)
