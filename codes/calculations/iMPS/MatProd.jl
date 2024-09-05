@@ -71,19 +71,19 @@ function reduHam(ψ::Vector,H::Vector,site::Int64)
 end
 
 
-function orientSVD(ψ::Vector,eigenTM::AbstractTensorMap,site::Int64,direction::String)
+function orientSVD(ψ::Vector,eigenTM::AbstractTensorMap,site::Int64,direction::String,D_MPS::Int64)
     if direction == "right"
 
         if site == 1
-            U,S,V = tsvd(eigenTM,(2,),(1,))
+            U,S,V = tsvd(eigenTM,(2,),(1,);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2,-3] ≔ permute(U*S,(),(1,2))[1,-1]*ψ[site+1][1,-2,-3]
             nextMPS = permute(tempMPS,(),(1,2,3))
         elseif site == length(ψ)-1
-            U,S,V = tsvd(eigenTM,(3,),(1,2))
+            U,S,V = tsvd(eigenTM,(3,),(1,2);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2] ≔ permute(U*S,(),(1,2))[-1,1]*ψ[site+1][1,-2]
             nextMPS = permute(tempMPS,(),(1,2))
         else
-            U,S,V = tsvd(eigenTM,(3,),(1,2))
+            U,S,V = tsvd(eigenTM,(3,),(1,2);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2,-3] ≔ permute(U*S,(),(1,2))[-1,1]*ψ[site+1][1,-2,-3]
             nextMPS = permute(tempMPS,(),(1,2,3))
         end
@@ -93,15 +93,15 @@ function orientSVD(ψ::Vector,eigenTM::AbstractTensorMap,site::Int64,direction::
     elseif direction == "left"
 
         if site == length(ψ)
-            U,S,V = tsvd(eigenTM,(1,),(2,))
+            U,S,V = tsvd(eigenTM,(1,),(2,);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2,-3] ≔ permute(U*S,(),(1,2))[1,-1]*ψ[site-1][1,-2,-3]
             nextMPS = permute(tempMPS,(),(1,2,3))
         elseif site == 2
-            U,S,V = tsvd(eigenTM,(1,),(2,3))
+            U,S,V = tsvd(eigenTM,(1,),(2,3);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2] ≔ permute(U*S,(),(1,2))[1,-1]*ψ[site-1][1,-2]
-            nextMPS = permute(tempMPS,(),(1,2))
+            nextMPS = permute(tempMPS,(),(2,1))
         else
-            U,S,V = tsvd(eigenTM,(1,),(2,3))
+            U,S,V = tsvd(eigenTM,(1,),(2,3);trunc = truncdim(D_MPS))
             @tensor tempMPS[-1,-2,-3] ≔ permute(U*S,(),(1,2))[1,-1]*ψ[site-1][1,-2,-3]
             nextMPS = permute(tempMPS,(),(1,2,3))
         end
