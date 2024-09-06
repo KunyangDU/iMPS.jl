@@ -12,7 +12,7 @@ D_MPS = 2^4
 Mi = load("trans Ising/data/tdvp/Mi_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["DiffMi"]
 lst = load("trans Ising/data/tdvp/lst_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lst"]
 
-width,height = 0.7 .* (500,200)
+width,height = 0.7 .* (600,200)
 
 fig = Figure()
 ax = Axis(fig[1,1],

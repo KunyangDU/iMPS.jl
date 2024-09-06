@@ -1,3 +1,3 @@
 # iMPS
 
-Personal codes for finite-MPS simulations, including DMRG, TDVP, etc..
+Personal code for finite MPS/MPO simulations, including DMRG, TDVP, etc..
