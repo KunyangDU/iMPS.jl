@@ -9,34 +9,41 @@ function sweepTDVP1(ψ::Vector,H::Vector,
     lst = collect(range(0,t,Nt))
     τ = t/(Nt-1)/2
 
-    lsψ[1] = ψ
+    lsψ[1] = deepcopy(ψ)
+
+    #MiMPO = TensorMap([1 0;0 -1],(ℂ^2)'→ (ℂ^2)')
+
 
     for i in 2:Nt
-        println("evolution $i begin, t = $(round(lst[i];digits=3))")
+        #lsMi = Quant1(ψ,MiMPO,D_MPS)
+        start_time = time()
+        println("evolution $i begin, t = $(round(lst[i];digits=3))/J")
 
         EnvR = RightEnv(ψ,H,1)
-        ψ[1:2] .= RightUpdateTDVP1(ψ[1:2],H[1],EnvR,τ,D_MPS)
+        ψ[1:2] = RightUpdateTDVP1(ψ[1:2],H[1],EnvR,τ,D_MPS)
         EnvL = LeftEnv(ψ[1],H[1])
 
         for iL in 2:length(H)-1
             EnvR = RightEnv(ψ,H,iL)
-            ψ[iL:iL+1] .= RightUpdateTDVP1(ψ[iL:iL+1],H[iL],EnvL,EnvR,τ,D_MPS)
+            ψ[iL:iL+1] = RightUpdateTDVP1(ψ[iL:iL+1],H[iL],EnvL,EnvR,τ,D_MPS)
             EnvL = PushRight(EnvL,ψ[iL],H[iL])
         end
         println("right sweep finished")
 
         EnvL = LeftEnv(ψ,H,1)
-        ψ[end-1:end] .= LeftUpdateTDVP1(ψ[end-1:end],H[end],EnvL,2*τ,D_MPS)
+        ψ[end-1:end] = LeftUpdateTDVP1(ψ[end-1:end],H[end],EnvL,2*τ,D_MPS)
         EnvR = RightEnv(ψ[end],H[end])
 
         for iL in length(H)-1:-1:2
             EnvL = LeftEnv(ψ,H,iL)
-            ψ[iL-1:iL] .= LeftUpdateTDVP1(ψ[iL-1:iL],H[iL],EnvL,EnvR,τ,D_MPS)
+            ψ[iL-1:iL] = LeftUpdateTDVP1(ψ[iL-1:iL],H[iL],EnvL,EnvR,τ,D_MPS)
             EnvR = PushLeft(EnvR,ψ[iL],H[iL])
         end
         println("left sweep finished")
 
-        lsψ[i] = ψ
+        println("evolution $i finished, time consumed $(round(time()-start_time;digits=2))s")
+
+        lsψ[i] = deepcopy(ψ)
     end
 
     return lsψ,lst
@@ -56,7 +63,7 @@ function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     reduH0 = ReduHam1(LeftEnv(thisMPS,Hi),EnvR)
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
-    return RightMerge(Σ,thisMPS,ψs[2])
+    return collect(RightMerge(Σ,thisMPS,ψs[2]))
 end
 
 function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
@@ -71,7 +78,7 @@ function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     reduH0 = ReduHam1(PushRight(EnvL,thisMPS,Hi),EnvR)
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
-    return RightMerge(Σ,thisMPS,ψs[2])
+    return collect(RightMerge(Σ,thisMPS,ψs[2]))
 end
 
 
@@ -87,7 +94,7 @@ function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     reduH0 = ReduHam1(EnvL,RightEnv(thisMPS,Hi))
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
-    MPSs = LeftMerge(Σ,thisMPS,ψs[1])
+    MPSs = collect(LeftMerge(Σ,thisMPS,ψs[1]))
 
     return MPSs
 end
@@ -104,7 +111,7 @@ function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     reduH0 = ReduHam1(EnvL,PushLeft(EnvR,thisMPS,Hi))
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
-    return LeftMerge(Σ,thisMPS,ψs[1])
+    return collect(LeftMerge(Σ,thisMPS,ψs[1]))
 end
 
 function EvolveOpr(Ham::AbstractTensorMap,τ::Number)

@@ -81,7 +81,7 @@ function IsingMagmom(L::Int64)
 end
 
 
-function IsingLocalizedMagmom(L::Int64,site::Int64;h::Number=0,t::Number=0)
+function IsingLocalMagmom(L::Int64,site::Int64;h::Number=0,t::Number=0)
     
     I = diagm(ones(2))
     I0 = zeros(2,2)
@@ -151,7 +151,7 @@ function IsingMPS(L::Int64,state::String,D_MPS::Int64;noise::Number=0)
                 U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:ii+1))...;trunc = truncdim(D_MPS))
                 MPS[ii] = V
             end
-            iniMPS = U*S
+            iniMPS = U*S |> x -> x / norm(x)
             println("MPS initialized $(L-ii+1)/$L")
         end
         MPS[1] = permute(iniMPS,(),(1,2))
@@ -165,7 +165,7 @@ end
 
 
 
-function LocalizedMPS(L::Int64,state::Int64,D_MPS::Int64;noise::Number=0)
+function IsingLocalMPS(L::Int64,state::Int64,D_MPS::Int64;noise::Number=0)
 
     initialState = zeros(ComplexF64,[d for _ in 1:L]...)
 
@@ -187,10 +187,10 @@ function LocalizedMPS(L::Int64,state::Int64,D_MPS::Int64;noise::Number=0)
                 U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:ii+1))...;trunc = truncdim(D_MPS))
                 MPS[ii] = V
             end
-            iniMPS = U*S
+            iniMPS = U*S |> x -> x / norm(x)
             println("MPS initialized $(L-ii+1)/$L")
         end
-        MPS[1] = permute(iniMPS,(),(1,2))
+        MPS[1] = permute(iniMPS,(),(1,2)) |> x -> x / norm(x)
         println("MPS initialized $L/$L")
         println("MPS totally initialized")
         MPS

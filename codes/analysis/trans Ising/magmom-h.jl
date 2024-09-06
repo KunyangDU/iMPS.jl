@@ -7,9 +7,9 @@ L = 12
 J = -1.0
 D_MPS = 2^4
 
-@load "trans Ising/data/lsh_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsh
-@load "trans Ising/data/lsMz_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsMz
-@load "trans Ising/data/lsEg_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsEg
+@load "trans Ising/data/dmrg/lsh_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsh
+@load "trans Ising/data/dmrg/lsMz_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsMz
+@load "trans Ising/data/dmrg/lsEg_D=$(D_MPS)_L=$(L)_J=$(J).jld2" lsEg
 
 
 width,height = 0.9 .* (450,110)
