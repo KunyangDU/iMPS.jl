@@ -12,13 +12,13 @@ D_MPS = 2^4
 Mi = load("trans Ising/data/tdvp/Mi_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["DiffMi"]
 lst = load("trans Ising/data/tdvp/lst_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lst"]
 
-width,height = 0.9 .* (300,200)
+width,height = 0.7 .* (500,200)
 
 fig = Figure()
 ax = Axis(fig[1,1],
 xticks = 1:13,
 xlabel = L"\text{site}\ i",
-ylabel = L"t",
+ylabel = L"t/J",
 title = "TransIsing Dynamics\nL=$(L) J=$(J) D=$(D_MPS) (hz=0.01)",
 titlealign = :left,
 width = width,height = height)
@@ -27,7 +27,7 @@ hm = heatmap!(ax,1:L,lst,Mi',
 colormap = :bwr,
 #colorrange = (0,0.25)
 )
-#ylims!(ax,0,3)
+ylims!(ax,0,8)
 
 Colorbar(fig[1,2],hm,
 label = L"\langle σ^z \rangle")
