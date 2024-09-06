@@ -1,6 +1,10 @@
 
 #基本思路，计算每一时刻的MPS，在update处插入演化与反向演化
 #本质上来说不用求解本征值，直接对该点的MPS进行演化
+
+# 脚本拆分
+# 注意Apply的冗余和ReduHam的广泛性，可以简化代码
+
 function sweepTDVP1(ψ::Vector,H::Vector,
     t::Number,Nt::Int64,
     D_MPS::Int64)
