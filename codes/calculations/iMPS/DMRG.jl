@@ -25,6 +25,7 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
         EnvL = LeftEnv(ψ,H,1)
         Eg, ψ[end-1:end] = LeftUpdateDMRG1(ψ[end-1],H[end],EnvL,LanczosLevel,D_MPS)
         EnvR = RightEnv(ψ[end],H[end])
+        #ψ[end-1] =  (ℂ^2 ⊗ ℂ^4 ⊗ (ℂ^2)')
         for iL in L-1:-1:2
             EnvL = LeftEnv(ψ,H,iL)
             Eg,ψ[iL-1:iL] = LeftUpdateDMRG1(ψ[iL-1],H[iL],EnvL,EnvR,LanczosLevel,D_MPS)

@@ -81,6 +81,51 @@ function IsingMagmom(L::Int64)
 end
 
 
+function IsingLocalizedMagmom(L::Int64,site::Int64;h::Number=0,t::Number=0)
+    
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    σx = [0 1;1 0]
+    σz = [1 0;0 -1]
+    Σ = [I for _ in 1:L]
+    Σ[site] = exp(-1im*h*σx*t)'*σz*exp(-1im*h*σx*t)
+
+    d = 2
+    D_MPO = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    phys = ℂ^d
+    bond = ℂ^D_MPO
+    for i in 1:L
+        if i == 1
+            #M = TensorMap(vcat(map(x -> x[:],(σz,I))...), phys' → phys'  ⊗ bond) final format
+            M = TensorMap(vcat(map(x -> x[:],(Σ[i],I))...), bond' → phys'  ⊗ phys)
+            M = permute(M,(1,3),(2,))
+        elseif i == L
+            #M = TensorMap(vcat(map(x -> x[:],(I,σz))...), phys' ⊗ bond → phys' ) final format
+            M = TensorMap(vcat(map(x -> x[:],(I,Σ[i]))...), bond → phys ⊗ phys' )
+            M = permute(M,(2,),(1,3))
+        else
+            Hi = [
+                I I0
+                Σ[i] I
+            ]
+            reshape(Hi[:],D_MPO,d,D_MPO,d)
+            M = TensorMap(Hi,phys' ⊗ bond'→ phys' ⊗ bond' )
+            M = permute(M,(1,4),(3,2))
+        end
+        MPO[i] = M
+        println("MPO finished $i/$L")
+    end
+    println("MPO totally finished")
+
+    return MPO
+
+end
+
+
+
 function IsingMPS(L::Int64,state::String,D_MPS::Int64;noise::Number=0)
 
     initialState = zeros(ComplexF64,[d for _ in 1:L]...)
@@ -118,5 +163,40 @@ function IsingMPS(L::Int64,state::String,D_MPS::Int64;noise::Number=0)
     return MPS
 end
 
+
+
+function LocalizedMPS(L::Int64,state::Int64,D_MPS::Int64;noise::Number=0)
+
+    initialState = zeros(ComplexF64,[d for _ in 1:L]...)
+
+    index = 2*ones(Int64, L)
+    index[state] = 1
+
+    initialState[index...] = 1im
+
+    initialState += noise .* rand(ComplexF64,[d for _ in 1:L]...)
+
+    MPS = let 
+        iniMPS = Tensor(initialState, ⊗([ℂ^d for i in 1:L]...)) |> x -> x / norm(x)
+        MPS = Vector{AbstractTensorMap}(undef, L)
+        for ii in L:-1:2
+            if ii == L
+                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:L))...;trunc = truncdim(D_MPS))
+                MPS[ii] = V
+            else
+                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:ii+1))...;trunc = truncdim(D_MPS))
+                MPS[ii] = V
+            end
+            iniMPS = U*S
+            println("MPS initialized $(L-ii+1)/$L")
+        end
+        MPS[1] = permute(iniMPS,(),(1,2))
+        println("MPS initialized $L/$L")
+        println("MPS totally initialized")
+        MPS
+    end
+
+    return MPS
+end
 
 

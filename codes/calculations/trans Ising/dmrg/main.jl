@@ -14,10 +14,10 @@ J = -1.0
 for h in 0.0
     
     H = IsingHam(L;J=J,h=h)
-    ψ = initialMPS(L,d,D_MPS)
+    ψ = RandMPS(L,d,D_MPS)
 
     LanczosLevel = 16
-    Nsweep = 5
+    Nsweep = 1
 
     ψ,lsE = sweepDMRG1(ψ,H,Nsweep,LanczosLevel,D_MPS)
 

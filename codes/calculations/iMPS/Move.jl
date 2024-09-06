@@ -6,6 +6,7 @@ end
 function LeftMove(nextψ::AbstractTensorMap,eigenAi::AbstractTensorMap,D_MPS::Int64)
     Σ,V = LeftSVD(eigenAi,D_MPS)
     return collect(LeftMerge(Σ,V,nextψ))
+    #nextψ = (ProductSpace{ComplexSpace, 0}(), (ℂ^2 ⊗ ℂ^4 ⊗ (ℂ^2)'))
 end
 
 # SVD

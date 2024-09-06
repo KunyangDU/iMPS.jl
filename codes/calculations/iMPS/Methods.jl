@@ -11,7 +11,7 @@ function showQuantSweep(lsQ::Vector;name::String = "Quantity")
 end
 
 
-function initialMPS(L::Int64,d::Int64,D::Int64)  
+function RandMPS(L::Int64,d::Int64,D::Int64)  
     
     MPS = let 
         iniMPS = Tensor(rand, ComplexF64, ⊗([ℂ^d for i in 1:L]...)) |> x -> x / norm(x)
