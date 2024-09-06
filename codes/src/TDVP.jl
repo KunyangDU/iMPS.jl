@@ -3,7 +3,7 @@
 #本质上来说不用求解本征值，直接对该点的MPS进行演化
 
 # 脚本拆分
-# 注意Apply的冗余和ReduHam的广泛性，可以简化代码
+# 注意Apply的冗余和EffHam的广泛性，可以简化代码
 
 function sweepTDVP1(ψ::Vector,H::Vector,
     t::Number,Nt::Int64,
@@ -59,12 +59,12 @@ function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvR::AbstractTensorMap,τ::Number,
     D_MPS::Int64)
 
-    reduH1 = ReduHam1(Hi,EnvR)
+    reduH1 = EffHam(Hi,EnvR)
     Aτ = Apply(ψs[1],EvolveOpr(reduH1,τ))
 
     Στ,thisMPS = RightSVD(Aτ,D_MPS)
 
-    reduH0 = ReduHam1(LeftEnv(thisMPS,Hi),EnvR)
+    reduH0 = EffHam(LeftEnv(thisMPS,Hi),EnvR)
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
     return collect(RightMerge(Σ,thisMPS,ψs[2]))
@@ -74,12 +74,12 @@ function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
     D_MPS::Int64)
 
-    reduH1 = ReduHam1(Hi,EnvL,EnvR)
+    reduH1 = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψs[1],EvolveOpr(reduH1,τ))
 
     Στ,thisMPS = RightSVD(Aτ,D_MPS)
 
-    reduH0 = ReduHam1(PushRight(EnvL,thisMPS,Hi),EnvR)
+    reduH0 = EffHam(PushRight(EnvL,thisMPS,Hi),EnvR)
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
     return collect(RightMerge(Σ,thisMPS,ψs[2]))
@@ -90,12 +90,12 @@ function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,τ::Number,
     D_MPS::Int64)
 
-    reduH1 = ReduHam1(Hi,EnvL)
+    reduH1 = EffHam(Hi,EnvL)
     Aτ = Apply(ψs[2],EvolveOpr(reduH1,τ))
 
     Στ,thisMPS = LeftSVD(Aτ,D_MPS)
 
-    reduH0 = ReduHam1(EnvL,RightEnv(thisMPS,Hi))
+    reduH0 = EffHam(EnvL,RightEnv(thisMPS,Hi))
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
     MPSs = collect(LeftMerge(Σ,thisMPS,ψs[1]))
@@ -107,52 +107,15 @@ function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
     D_MPS::Int64)
 
-    reduH1 = ReduHam1(Hi,EnvL,EnvR)
+    reduH1 = EffHam(Hi,EnvL,EnvR)
     Aτ = LeftApply(ψs[2],EvolveOpr(reduH1,τ))
     Aτ = permute(Aτ,(),(2,3,1))
     Στ,thisMPS = LeftSVD(Aτ,D_MPS)
 
-    reduH0 = ReduHam1(EnvL,PushLeft(EnvR,thisMPS,Hi))
+    reduH0 = EffHam(EnvL,PushLeft(EnvR,thisMPS,Hi))
     Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
 
     return collect(LeftMerge(Σ,thisMPS,ψs[1]))
 end
 
-function EvolveOpr(Ham::AbstractTensorMap,τ::Number)
-    return exp(-1im * Ham * τ)
-end
 
-function Apply(ψ::AbstractTensorMap{ComplexSpace,1,2},Opr::AbstractTensorMap{ComplexSpace,2,4})
-    @tensor ψτ[-1,-2,-3] ≔ ψ[1,2,3]*Opr[1,-1,2,3,-2,-3]
-    return permute(ψτ,(1,),(2,3))
-end
-
-function Apply(ψ::AbstractTensorMap{ComplexSpace,1,1},Opr::AbstractTensorMap{ComplexSpace,2,2})
-    @tensor ψτ[-1,-2] ≔ ψ[1,2]*Opr[1,-1,2,-2]
-    return permute(ψτ,(1,),(2,))
-end
-
-function Apply(ψ::AbstractTensorMap{ComplexSpace,0,2},Opr::AbstractTensorMap{ComplexSpace,2,2})
-    @tensor ψτ[-1,-2] ≔ ψ[1,2]*Opr[1,2,-1,-2]
-    return permute(ψτ,(),(1,2))
-end
-
-function LeftApply(ψ::AbstractTensorMap{ComplexSpace,0,2},Opr::AbstractTensorMap{ComplexSpace,2,2})
-    @tensor ψτ[-1,-2] ≔ ψ[1,2]*Opr[1,2,-1,-2]
-    return permute(ψτ,(),(1,2))
-end
-
-function Apply(ψ::AbstractTensorMap{ComplexSpace,0,3},Opr::AbstractTensorMap{ComplexSpace,3,3})
-    @tensor ψτ[-1,-2,-3] ≔ ψ[1,2,3]*Opr[1,2,3,-1,-2,-3]
-    return permute(ψτ,(),(1,2,3))
-end
-
-function LeftApply(ψ::AbstractTensorMap{ComplexSpace,0,3},Opr::AbstractTensorMap{ComplexSpace,3,3})
-    @tensor ψτ[-3,-1,-2] ≔ ψ[3,1,2]*Opr[1,2,3,-1,-2,-3]
-    return permute(ψτ,(),(1,2,3))
-end
-
-function ReduHam0(EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,1,2})
-    @tensor reduH0[-1,-2,-3,-4] ≔ EnvL[-1,1,-3] * EnvR[-2,1,-4]
-    return permute(reduH0,(1,2),(3,4))
-end

@@ -42,7 +42,7 @@ function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     EnvR::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(Hi,EnvR)
+    reduH = EffHam(Hi,EnvR)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = RightMove(nextψ,Ev',D_MPS)
 
@@ -53,7 +53,7 @@ function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(Hi,EnvL,EnvR)
+    reduH = EffHam(Hi,EnvL,EnvR)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = RightMove(nextψ,Ev',D_MPS)
 
@@ -64,7 +64,7 @@ function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(Hi,EnvL,EnvR)
+    reduH = EffHam(Hi,EnvL,EnvR)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = LeftMove(nextψ,Ev',D_MPS)
 
@@ -75,7 +75,7 @@ function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(Hi,EnvL)
+    reduH = EffHam(Hi,EnvL)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = LeftMove(nextψ,Ev',D_MPS)
 
@@ -86,7 +86,7 @@ end
 
 function RightUpdateDMRG1(ψ::Vector,H::Vector,site::Int64,LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(ψ,H,site)
+    reduH = EffHam(ψ,H,site)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = RightMove(ψ[site+1],Ev',D_MPS)
 
@@ -95,7 +95,7 @@ end
 
 function LeftUpdateDMRG1(ψ::Vector,H::Vector,site::Int64,LanczosLevel::Int64,D_MPS::Int64)
 
-    reduH = ReduHam1(ψ,H,site)
+    reduH = EffHam(ψ,H,site)
     Eg,Ev = groundEig(reduH,LanczosLevel)
     MPSs = LeftMove(ψ[site-1],Ev',D_MPS)
 

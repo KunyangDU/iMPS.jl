@@ -1,6 +1,6 @@
 using TensorKit,LinearAlgebra,JLD2
 
-include("../../iMPS/iMPS.jl")
+include("../../../src/iMPS.jl")
 include("../model.jl")
 
 L = 12
