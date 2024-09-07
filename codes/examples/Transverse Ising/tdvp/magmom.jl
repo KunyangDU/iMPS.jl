@@ -4,13 +4,13 @@ include("../../../src/iMPS.jl")
 include("../model.jl")
 
 
-L = 9
+L = 21
 
 d = 2
-D_MPS = 2^6
+D_MPS = 2^3
 
 J = -1.0
-h = -0.8
+h = -0.5
 
 lsψ = load("examples/Transverse Ising/data/tdvp/Impur_lsψ_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lsψ"]
 lst = load("examples/Transverse Ising/data/tdvp/Impur_lst_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lst"]

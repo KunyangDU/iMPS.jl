@@ -3,20 +3,20 @@ using TensorKit,LinearAlgebra,JLD2
 include("../../../src/iMPS.jl")
 include("../model.jl")
 
-L = 11
+L = 21
 
 d = 2
-D_MPS = 2^4
+D_MPS = 2^3
 
 J = -1.0
 h = -0.5
-state = 6
+state = 11
 
 H = HamMPO(L;J=J,h=h)
 ψ = ImpurMPS(L,state)
 #ψ = FerroMPS(L,"AFM")
-t = 3.0*abs(J)
-Nt = 54
+t = 10.0*abs(J)
+Nt = 100
 
 lsψ,lst = sweepTDVP2(ψ,H,t,Nt,D_MPS)
 
