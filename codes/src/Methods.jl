@@ -1,29 +1,5 @@
-function showdomain(M::AbstractTensorMap)
-    @show codomain(M),domain(M)
-end
 
-function showQuantSweep(lsQ::Vector;name::String = "Quantity")
-    for (iq,q) in enumerate(lsQ)
-        println("$name\t$iq\t$q")
-    end
-end
-
-function showBlockMPO(Block::AbstractTensorMap{ComplexSpace,2,2})
-    # where block of MPO is shown in block matrix, and the outer index is bond
-    # i.e.
-    #  I  I₀
-    #  σₓ I 
-    ChosenBlock = permute(Block,(2,4),(3,1))
-    @show ChosenBlock
-end
-
-function checkOrth(M::AbstractTensorMap{ComplexSpace,1,2})
-    @tensor test[-1,-2] ≔ M[-1,1,2]*M'[1,2,-2]
-    return test
-end
-
-
-function RandMPS(L::Int64,d::Int64)
+function RandMPS(L::Int64;d::Int64=2)
     # suppose center at leftmost
     MPS = Vector{AbstractTensorMap}(undef,L)
 
@@ -91,3 +67,5 @@ function LocalMerge(ψ1::AbstractTensorMap{ComplexSpace,0,3},
     @tensor ψm[-1,-2,-3,-4] ≔ ψ1[-1,-2,1] * ψ2[1,-3,-4]
     return permute(ψm,(),(1,2,3,4))
 end
+
+

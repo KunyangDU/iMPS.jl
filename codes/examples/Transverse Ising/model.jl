@@ -90,7 +90,7 @@ function LocalMagmomMPO(L::Int64,site::Int64;h::Number=0,t::Number=0)
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            data = reshape([Σ[i] I],d,D,d,1)
+            data = reshape([Σ[i] I],d,1,d,D)
             M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
             data = reshape([I;Σ[i]],d,D,d,1)

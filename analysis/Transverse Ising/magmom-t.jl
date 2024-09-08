@@ -17,7 +17,7 @@ fig = Figure()
 ax = Axis(fig[1,1],
 xticks = 1:L,
 xlabel = L"\text{site}\ i",
-ylabel = L"t/J",
+ylabel = L"tJ",
 title = "TransIsing Dynamics\nL=$(L) J=$(J) h=$(h) D=$(D_MPS) (hz=0.01)",
 titlealign = :left,
 width = width,height = height)
