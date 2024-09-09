@@ -31,6 +31,7 @@ function HamMPO(Latt::AbstractLattice;
 
     pairs = neighbor(Latt)
     # 如果hopping参数不一样，那么每个参数对应的hopping应该多一个态
+    #for iLatt in size(Latt):-1:2
     for iLatt in size(Latt):-1:2
         hps = FindPair(pairs,2,iLatt)
         for (i,j) in hps
@@ -47,25 +48,6 @@ function HamMPO(Latt::AbstractLattice;
             end
         end
     end
-
-
-#=     HM = Vector{Matrix}(undef,L)
-    innerM = FreeFermionDataSqua(t,μ)
-
-    HM[1] = innerM[end-1:end,:]
-    for i in eachindex(HM)[2:end-1]
-        HM[i] = innerM
-    end
-    HM[end] = innerM[:,1:2] =#
-
-#=     # add hopping automatically
-    HM = InitHamMatri(size(Latt),d,D)
-    # define (i,j) as hopping j -> i + j <- i, i.e. cᵢ⁺cⱼ + cⱼ⁺cᵢ
-    for (i,j) in neighbor(Latt)
-        # suppose i<j
-        @assert i<j
-        HM[i:j] = HoppingMPO(HM[i:j],t)
-    end =#
 
     MPO = Vector{AbstractTensorMap}(undef,size(Latt))
     
@@ -92,7 +74,7 @@ function InitHamMatri(L::Int64,d::Int64,D_MPO::Int64)
     HM[1] = mode[end-d+1:end,:]
     HM[end] = mode[:,1:d]
     for i in eachindex(HM)[2:end-1]
-        HM[i] = mode
+        HM[i] = deepcopy(mode)
     end
 
     return HM
@@ -119,8 +101,133 @@ function HoppingMPO(HM::Vector,t::Number;
     return hpHM
 end
 
+function LocalNumMPO(L::Int64,site::Int64;)
 
-function FreeFermionDataSqua(t::Number = 1,μ::Number = 0)
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    a⁺ = [0 1;0 0]
+    a = a⁺'
+    n = a⁺*a
+
+    Σ = [I0 for _ in 1:L]
+    Σ[site] = n
+
+    d = 2
+    D = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([Σ[i] I],d,1,d,D)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([I;Σ[i]],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                I I0
+                Σ[i] I
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+
+end
+
+function NMPO(L::Int64)
+
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    a⁺ = [0 1;0 0]
+    a = a⁺'
+    n = a⁺*a
+
+    d = 2
+    D = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([n I],d,D,d,1)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([I;n],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                I I0
+                n I
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+end
+
+
+function LocalNumMPO(L::Int64,site::Int64;)
+
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    a⁺ = [0 1;0 0]
+    a = a⁺'
+    n = a⁺*a
+
+    Σ = [I0 for _ in 1:L]
+    Σ[site] = n
+
+    d = 2
+    D = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([Σ[i] I],d,1,d,D)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([I;Σ[i]],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                I I0
+                Σ[i] I
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+
+end
+
+function LocalNMPO(d::Int64=2,data::Array=[1 0;0 0])
+    return Opr1(d,data)
+end
+
+
+
+#= function FreeFermionDataSqua(t::Number = 1,μ::Number = 0)
     D = 8
     d = 2
     
@@ -140,5 +247,5 @@ function FreeFermionDataSqua(t::Number = 1,μ::Number = 0)
 
     return innerM
     
-end
+end =#
 

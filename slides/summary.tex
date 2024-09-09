@@ -40,9 +40,9 @@ height=9,scale=0.5,debug]{beamerposter}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Model}
+	\frametitle{Model:Transverse Ising Chain}
 	\begin{itemize}
-		\item \textbf{Hamiltonian:} Transverse Ising Model
+		\item \textbf{Hamiltonian:} 
 		\begin{equation}
 			H = -J\sum_{i=1}^{N-1}\sigma_i^z \sigma_{i+1}^z -h\sum_i^N\sigma_{i=1}^x + h_z\sum_{i=1}^N\sigma_i^z
 		\end{equation}
@@ -254,16 +254,71 @@ height=9,scale=0.5,debug]{beamerposter}
 \begin{frame}
 	\frametitle{Results}
 	\begin{itemize}
-		\item Choose initial state relevant parameters are
+		\item Choose initial state relevant is
 		\begin{gather}
-			\Psi_0 = \ket{-1,-1,\cdots,-1,1,-1,\cdots,-1,-1}\\
-			t=5/\abs{J},\quad L=13,\quad D=16
+			\Psi_0 = \ket{-1,-1,\cdots,-1,1,-1,\cdots,-1,-1}
 		\end{gather}
-		\item Simulation results:
+		\item Simulation results: diffusion can be observed at site 11.
 		\begin{figure}[H]
-			\includegraphics[width=0.75 \linewidth]{images/Impur_Mi_D=8_L=21_J=-1.0_t=10.pdf}
+			\includegraphics[width=0.85 \linewidth]{images/Impur_Mi_D=8_L=21_J=-1.0_t=10.pdf}
 		\end{figure}
-		diffusion can be observed from site 7.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:Free Fermion on Square Lattice}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = t\sum_{\langle i,j \rangle}c_i^\dagger c_j + c_j^\dagger c_i
+		\end{equation}
+		\item \textbf{Parameters:} Physics parameters:
+		\begin{equation}
+			t=1
+		\end{equation}
+		\item \textbf{J-W transformation:}
+		\begin{equation}
+			c_i = \prod_{k=1}^{i-1}b_i,\quad c_i^\dagger = \prod_{k=1}^{i-1}b_i^\dagger
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Charge susceptibility.
+		\begin{gather}
+			\chi = \frac{1}{N}\pdv{N}{\mu}
+		\end{gather}
+		\item Simulation results: diffusion can be observed at site 11.
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.3\linewidth]{images/χ_D=64_20x1.pdf}}
+			\subfigure{\includegraphics[height=0.3\linewidth]{images/χ_D=32_8x2.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Obserables}
+	\begin{itemize}
+		\item Spectrum function
+		\begin{gather}
+			A(\vb*{k},\omega) = -\frac{1}{\pi}\mathrm{Im} G(\vb*{k},\omega + 0^+)
+		\end{gather}
+		there are two calculation schemes
+		\begin{enumerate}
+			\item Time evolution
+			\begin{equation}
+				G(\vb*{k},\omega) = \expval{c_k(t)c_k^\dagger}{\Psi_0}
+			\end{equation}
+			\item Hamiltonian inversion
+			\begin{equation}
+				G(\vb*{k},\omega) = \expval{c_k \frac{1}{\omega - H} c_k^\dagger}{\Psi_0}
+			\end{equation}
+		\end{enumerate}
 	\end{itemize}
 \end{frame}
 

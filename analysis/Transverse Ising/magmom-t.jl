@@ -30,6 +30,13 @@ colormap = :bwr,
 
 Colorbar(fig[1,2],hm,
 label = L"\langle σ^z \rangle")
+
+vm = MaxGroupV(J,h)
+tv = 0:0.1:10
+lines!(ax,vm*tv .+ (L-1)/2 .+ 1,tv,color = :white,linestyle = :dash)
+lines!(ax,-vm*tv .+ (L-1)/2 .+ 1,tv,color = :white,linestyle = :dash)
+text!(15, 4, text = L"x=x_0 + v^g_{max}t", align = (:left,:center),color = :white)
+
 resize_to_layout!(fig)
 display(fig)
 

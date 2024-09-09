@@ -37,7 +37,7 @@ end
 
 
 
-function EvolveOpr(Ham::AbstractTensorMap,τ::Number)
+function EvolveOpr(Ham::AbstractTensorMap,τ::Float64)
     return exp(-1im * Ham * τ)
 end
 
