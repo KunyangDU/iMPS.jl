@@ -15,7 +15,8 @@ function HamMPO(Latt::AbstractLattice;
     a = a⁺'
 
     maxd = FindMaxDist(neighbor(Latt))
-    D_MPO = d*(2*maxd + 2)
+    #D_MPO = d*(2*maxd + 2)
+    D_MPO = 2*(maxd+1)
     HM = InitHamMatri(size(Latt),d,D_MPO)
 
     # onsite μ
@@ -44,7 +45,8 @@ function HamMPO(Latt::AbstractLattice;
 
             for k in j-1:-1:i+1
                 step = j-k
-                HM[k][(4*step-1)*d+1:(4*step+1)*d,(4*step-3)*d+1:(4*step-1)*d] = kron(diagm(ones(d)),F)
+                #HM[k][(4*step-1)*d+1:(4*step+1)*d,(4*step-3)*d+1:(4*step-1)*d] = kron(diagm(ones(d)),F)
+                HM[k][(2*step+1)*d .+ (1:2*d),(2*step-1)*d .+ (1:2*d)] = kron(diagm(ones(d)),F)
             end
         end
     end
@@ -223,6 +225,86 @@ end
 
 function LocalNMPO(d::Int64=2,data::Array=[1 0;0 0])
     return Opr1(d,data)
+end
+
+function CKMPO(Latt::AbstractLattice,k::Vector)
+
+    L = size(Latt)
+
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    F = -[1 0;0 -1]
+    a⁺ = [0 1;0 0]
+    a = a⁺'
+
+    d = 2
+    D = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([F a*exp(-1im*dot(k,coordinate(Latt,i)))],d,D,d,1)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([a*exp(-1im*dot(k,coordinate(Latt,i)));I],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                F a*exp(-1im*dot(k,coordinate(Latt,i)))
+                I0 I
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+    
+end
+
+function CKdaggMPO(Latt::AbstractLattice,k::Vector)
+
+    L = size(Latt)
+
+    I = diagm(ones(2))
+    I0 = zeros(2,2)
+    F = -[1 0;0 -1]
+    a⁺ = [0 1;0 0]
+    a = a⁺'
+
+    d = 2
+    D = 2
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([F a⁺*exp(1im*dot(k,coordinate(Latt,i)))],d,D,d,1)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([a⁺*exp(1im*dot(k,coordinate(Latt,i)));I],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                F a⁺*exp(1im*dot(k,coordinate(Latt,i)))
+                I0 I
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+    
 end
 
 

@@ -17,6 +17,19 @@ function showBlockMPO(Block::AbstractTensorMap{ComplexSpace,2,2})
     @show ChosenBlock
 end
 
+function showMatrixElem(M::Matrix)
+    row,col = size(M)
+    
+    fig = Figure()
+    ax = Axis(fig[1,1],
+    xticks = 1:row,
+    yticks = 1:col)
+    
+    heatmap!(ax,M'[:,end:-1:1])
+    
+    display(fig)    
+end
+
 function checkOrth(M::AbstractTensorMap{ComplexSpace,1,2})
     @tensor test[-1,-2] ≔ M[-1,1,2]*M'[1,2,-2]
     return test

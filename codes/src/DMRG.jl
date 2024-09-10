@@ -8,8 +8,9 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
 
     # calculate the Environment
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
-
+    totaltruncerror = 0
     for i in 1:Nsweep
+        temptruncerr = 0
         println("sweep $i")
         start_time = time()
 
@@ -17,22 +18,26 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
-            ψ[i:i+1] = RightMove(ψ[i+1],Ev,D_MPS)
+            MPSs,temptruncerr = RightMove(ψ[i+1],Ev,D_MPS)
+            ψ[i:i+1] = deepcopy(MPSs)
             #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println(">>>>>> finished >>>>>>")
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
-            ψ[i-1:i] = LeftMove(ψ[i-1],Ev,D_MPS)
+            MPSs,temptruncerr = LeftMove(ψ[i-1],Ev,D_MPS)
+            ψ[i-1:i] = deepcopy(MPSs)
             #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println("<<<<<< finished <<<<<<")
 
-        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2))")
+        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
         lsE[i] = Eg
     end
 
@@ -51,7 +56,9 @@ function sweepDMRG2(ψ::Vector,H::Vector,
     # calculate the Environment
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
 
+    totaltruncerror = 0
     for i in 1:Nsweep
+        temptruncerr = 0
         println("sweep $i")
         start_time = time()
 
@@ -59,22 +66,28 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
-            ψ[i:i+1] = collect(RightSVD(Ev,D_MPS))
+            result = RightSVD(Ev,D_MPS)
+            temptruncerr = result[3]
+            ψ[i:i+1] .= deepcopy(result[1:2])
             #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println(">>>>>> finished >>>>>>")
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             Eg,Ev = LocalEigen(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel)
-            ψ[i-1:i] = collect(LeftSVD(Ev,D_MPS))
+            result = collect(LeftSVD(Ev,D_MPS))
+            temptruncerr = result[3]
+            ψ[i-1:i] .= deepcopy(result[1:2])
             #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println("<<<<<< finished <<<<<<")
 
-        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2))")
+        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
         lsE[i] = Eg
     end
 

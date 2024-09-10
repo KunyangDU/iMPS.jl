@@ -3,7 +3,7 @@ include("../model.jl")
 include("../../../src/iMPS.jl")
 
 
-Lx = 7
+Lx = 4
 Ly = 4
 
 t = 1

@@ -99,3 +99,10 @@ function Opr1(d::Int64,data::Array)
     phys = (ℂ^d)'
     return BlockMPO(data,phys,phys)
 end
+
+
+#= function Apply(MPS::Vector,MPO::Vector)
+    
+
+    return finalMPS
+end =#

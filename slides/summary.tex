@@ -296,30 +296,46 @@ height=9,scale=0.5,debug]{beamerposter}
 			\subfigbottomskip=2pt
 			\subfigcapskip=-5pt
 			\subfigure{\includegraphics[height=0.3\linewidth]{images/χ_D=64_20x1.pdf}}
-			\subfigure{\includegraphics[height=0.3\linewidth]{images/χ_D=32_8x2.pdf}}
+			\subfigure{\includegraphics[height=0.3\linewidth]{images/χ_D=32_4x4.pdf}}
 		\end{figure}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Obserables}
+	\frametitle{Obserables: Spectrum function}
 	\begin{itemize}
 		\item Spectrum function
 		\begin{gather}
-			A(\vb*{k},\omega) = -\frac{1}{\pi}\mathrm{Im} G(\vb*{k},\omega + 0^+)
+			S(\vb*{k},E) = -\frac{1}{\pi}\mathrm{Im} G^{ret}(\vb*{k},E)
 		\end{gather}
-		there are two calculation schemes
-		\begin{enumerate}
-			\item Time evolution
-			\begin{equation}
-				G(\vb*{k},\omega) = \expval{c_k(t)c_k^\dagger}{\Psi_0}
-			\end{equation}
-			\item Hamiltonian inversion
-			\begin{equation}
-				G(\vb*{k},\omega) = \expval{c_k \frac{1}{\omega - H} c_k^\dagger}{\Psi_0}
-			\end{equation}
-		\end{enumerate}
+		where the retarded Green function is 
+		\begin{equation}
+			\begin{gathered}
+				G^{ret}(\vb*{k},E) = \int_{-\infty}^{+\infty} G^{ret}(\vb*{k},t) \mathrm{e}^{iE t}\dd t\\
+				\begin{aligned}
+					G^{ret}(\vb*{k},t) =& -i\Theta(t)\expval{\left[c_k(t)c_k^\dagger(0)\right]}{\Psi_0}\\
+					=&\begin{cases}
+						&-i\mathrm{e}^{iE_0t}\left(\bra{\Psi_0}c_k\right)\mathrm{e}^{-iHt}\left(c_k^\dagger\ket{\Psi_0}\right) \text{ if } t >0\\
+						&-i\mathrm{e}^{-iE_0t}\left(\bra{\Psi_0}c_k^\dagger\right)\mathrm{e}^{iHt}\left(c_k\ket{\Psi_0}\right) \text{ if } t <0
+					  \end{cases}
+				\end{aligned}
+			\end{gathered}
+		\end{equation}
+		with 
+		\begin{equation}
+			c_k = \sum_{j}\mathrm{e}^{-i\vb*{k}\cdot\vb*{R}_j}c_j
+		\end{equation}
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Obserables: Spectrum function}
+	The final observables:
+	\begin{align}
+		\left(\bra{\Psi_0}c_i\right)\mathrm{e}^{-iHt}\left(c_j^\dagger\ket{\Psi_0}\right)\\
+		\left(\bra{\Psi_0}c_i^\dagger\right)\mathrm{e}^{iHt}\left(c_j\ket{\Psi_0}\right)
+	\end{align}
+	i.e. calculate the $2L$ MPO*MPS, then TDVP by all-to-all inner product. 
 \end{frame}
 
 \end{document}

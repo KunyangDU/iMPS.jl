@@ -2,7 +2,7 @@ using TensorKit,JLD2,LinearAlgebra,FiniteLattices
 include("../model.jl")
 include("../../../src/iMPS.jl")
 
-Lx = 7
+Lx = 4
 Ly = 4
 Latt = YCSqua(Lx,Ly)
 @save "examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
