@@ -31,7 +31,6 @@ function QuantUniv(ψ::Vector,Q::Vector)
 end
 
 
-
 function GreenFuncRet(ψ::AbstractTensorMap,H::Vector,E0::Float64,
     CK::Vector,CKdagg::Vector,lsE::Vector,D_MPS::Int64;
     τ::Number = 1/E0/5,TruncErr::Number = 1e-5,MaxIter::Int64=30)

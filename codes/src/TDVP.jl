@@ -26,34 +26,40 @@ function sweepTDVP1(ψ::Vector,H::Vector,
     lsψ[1] = deepcopy(ψ)
 
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
-
+    totaltruncerror = 0
     for iNt in 2:Nt
+        temptruncerr = 0
+
         start_time = time()
         println("evolution $iNt, t = $(round(lst[iNt];digits=3))/J")
 
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             if iNt != 1 && i == 1
-                ψ[i:i+1] .= RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
             else
-                ψ[i:i+1] .= RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
             end
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println(">>>>>> finished >>>>>>")
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             if i == L 
-                ψ[i-1:i] .= LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
             else
-                ψ[i-1:i] .= LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
             end
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         println("<<<<<< finished <<<<<<")
 
-        println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s")
+        println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
 
         lsψ[iNt] = deepcopy(ψ)
     end
@@ -86,11 +92,9 @@ function sweepTDVP2(ψ::Vector,H::Vector,
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             if iNt != 1 && i==1
-                MPSs,temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS;τback=τ)
-                ψ[i:i+1] = deepcopy(MPSs)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS;τback=τ)
             else
-                MPSs,temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS)
-                ψ[i:i+1] = deepcopy(MPSs)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS)
             end
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
 
@@ -101,11 +105,9 @@ function sweepTDVP2(ψ::Vector,H::Vector,
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             if i == L
-                MPSs,temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS;τback=τ)
-                ψ[i-1:i] = deepcopy(MPSs)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS;τback=τ)
             else
-                MPSs,temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS)
-                ψ[i-1:i] = deepcopy(MPSs)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS)
             end
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -148,11 +150,9 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             if iter != 1 && i==1
-                MPSs,temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS;τback=τ)
-                ψ[i:i+1] = deepcopy(MPSs)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS;τback=τ)
             else
-                MPSs,temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS)
-                ψ[i:i+1] = deepcopy(MPSs)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS)
             end
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -162,11 +162,9 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             if i == L
-                MPSs,temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS;τback=τ)
-                ψ[i-1:i] = deepcopy(MPSs)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS;τback=τ)
             else
-                MPSs,temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS)
-                ψ[i-1:i] = deepcopy(MPSs)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS)
             end
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -192,7 +190,8 @@ function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψs[1],EvolveOpr(effH,τ))
 
-    thisMPS,Στ,truncerr = RightSVD(Aτ,D_MPS)
+    MPSs,truncerr = RightSVD(Aτ,D_MPS)
+    thisMPS,Στ = MPSs
 
     effH0 = EffHam(PushRight(EnvL,thisMPS,Hi),EnvR)
     Σ = Apply(Στ,EvolveOpr(effH0,-τback))
@@ -208,7 +207,8 @@ function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψs[2],EvolveOpr(effH,τ))
 
-    Στ,thisMPS,truncerr = LeftSVD(Aτ,D_MPS)
+    MPSs,truncerr = LeftSVD(Aτ,D_MPS)
+    Στ,thisMPS = MPSs
 
     effH0 = EffHam(EnvL,PushLeft(EnvR,thisMPS,Hi))
     Σ = Apply(Στ,EvolveOpr(effH0,-τback))
@@ -225,7 +225,8 @@ function RightUpdateTDVP2(ψs::Vector,Hi::Vector,
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψm,EvolveOpr(effH,τ))
 
-    thisMPS,Στ,truncerr = RightSVD(Aτ,D_MPS)
+    MPSs,truncerr = RightSVD(Aτ,D_MPS)
+    thisMPS,Στ = MPSs 
 
     effH1 = EffHam(Hi[2],PushRight(EnvL,thisMPS,Hi[1]),EnvR)
     Σ = Apply(Στ,EvolveOpr(effH1,-τback))
@@ -241,8 +242,8 @@ function LeftUpdateTDVP2(ψs::Vector,Hi::Vector,
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψm,EvolveOpr(effH,τ))
 
-    Στ,thisMPS,truncerr = LeftSVD(Aτ,D_MPS)
-
+    MPSs,truncerr = LeftSVD(Aτ,D_MPS)
+    Στ,thisMPS = MPSs
     effH1 = EffHam(Hi[1],EnvL,PushLeft(EnvR,thisMPS,Hi[2]))
     Σ = Apply(Στ,EvolveOpr(effH1,-τback))
 

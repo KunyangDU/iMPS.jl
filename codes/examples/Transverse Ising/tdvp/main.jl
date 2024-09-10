@@ -16,9 +16,9 @@ H = HamMPO(L;J=J,h=h)
 ψ = ImpurMPS(L,state)
 #ψ = FerroMPS(L,"AFM")
 t = 10.0*abs(J)
-Nt = 100
+Nt = 60
 
-lsψ,lst = sweepTDVP2(ψ,H,t,Nt,D_MPS)
+lsψ,lst = MixTDVP(ψ,H,t,Nt,D_MPS)
 
 
 #@save "examples/Transverse Ising/data/tdvp/Impur_lsψ_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2" lsψ

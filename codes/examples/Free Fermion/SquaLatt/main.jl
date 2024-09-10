@@ -2,8 +2,8 @@ using TensorKit,JLD2,LinearAlgebra,FiniteLattices
 include("../model.jl")
 include("../../../src/iMPS.jl")
 
-Lx = 4
-Ly = 4
+Lx = 6
+Ly = 6
 Latt = YCSqua(Lx,Ly)
 @save "examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
 
@@ -23,6 +23,7 @@ LanczosLevel = D_MPO*d
 Nsweep = 3
 
 for μ in lsμ
+    @show μ
     H = HamMPO(Latt;μ=μ)
     ψ = RandMPS(Lx*Ly)
     ψ,lsE1 = sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS)

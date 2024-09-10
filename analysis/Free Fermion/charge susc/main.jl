@@ -2,8 +2,8 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 4
-Ly = 4
+Lx = 6
+Ly = 6
 
 t = 1
 
@@ -17,7 +17,7 @@ dμ = lsμ[2]-lsμ[1]
 
 #= χ = diff(nμ) ./ diff(lsμ)
 centerμ = centralize(lsμ) =#
-ind = 1:5:length(lsμ)
+ind = 1:4:length(lsμ)
 χ = diff(nμ[ind]) ./ diff(lsμ[ind])
 centerμ = centralize(lsμ[ind])
 
@@ -38,7 +38,7 @@ ylims!(axμ,1.1.*extrema(lsμ)...)
 scatterlines!(axμ,nμ,lsμ)
 #lines!(axμ,theonμ,theoμ,color = :red)
 
-lines!(axμ,curve,lsE,color = :red)
+lines!(axμ,curve,lsE,color = :red,linewidth = 2.0)
 
 axχ = Axis(fig[1,2],
 xlabel = L"χ",
@@ -49,7 +49,7 @@ hideydecorations!(axχ,grid = false)
 scatterlines!(axχ,χ,centerμ)
 #lines!(axχ,theoχ,theoμ,color = :red)
 ylims!(axχ,1.1.*extrema(lsμ)...)
-xlims!(axχ,0,0.25)
+xlims!(axχ,0,0.3)
 
 resize_to_layout!(fig)
 

@@ -18,8 +18,7 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
-            MPSs,temptruncerr = RightMove(ψ[i+1],Ev,D_MPS)
-            ψ[i:i+1] = deepcopy(MPSs)
+            ψ[i:i+1],temptruncerr = RightMove(ψ[i+1],Ev,D_MPS)
             #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -29,8 +28,7 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
-            MPSs,temptruncerr = LeftMove(ψ[i-1],Ev,D_MPS)
-            ψ[i-1:i] = deepcopy(MPSs)
+            ψ[i-1:i],temptruncerr = LeftMove(ψ[i-1],Ev,D_MPS)
             #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -66,9 +64,7 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
-            result = RightSVD(Ev,D_MPS)
-            temptruncerr = result[3]
-            ψ[i:i+1] .= deepcopy(result[1:2])
+            ψ[i:i+1],temptruncerr = RightSVD(Ev,D_MPS)
             #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -78,9 +74,7 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             Eg,Ev = LocalEigen(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel)
-            result = collect(LeftSVD(Ev,D_MPS))
-            temptruncerr = result[3]
-            ψ[i-1:i] .= deepcopy(result[1:2])
+            ψ[i-1:i],temptruncerr = collect(LeftSVD(Ev,D_MPS))
             #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)

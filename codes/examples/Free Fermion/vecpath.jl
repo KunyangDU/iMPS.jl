@@ -10,9 +10,17 @@ function Apply(MPS::Vector,MPO::Vector)
     return finalMPS
 end
 
+function test(a)
+    return [a,a],a
+end
 
-Latt = YCSqua(3,3)
 
-CKdaggMPO(Latt,[0.2,0.6])
+a = 1
+b = zeros(3)
+c = 0
+d = 0
+e = 0
+
+c,d,e = test(a)
 
 
