@@ -1,12 +1,12 @@
 
 function MixTDVP(ψ::Vector,H::Vector,
     t::Number,Nt::Int64,
-    D_MPS::Int64;prop::NTuple{2,Int64} = (1,5))
+    D_MPS::Int64;prop::NTuple{2,Int64} = (1,5),TruncErr::Number = 1e-5)
 
     N2, N1 = convert.(Int64,Nt .* prop ./ sum(prop))
     t2, t1 = convert.(Float64,t .* prop ./ sum(prop))
 
-    lsψ2,lst2 = sweepTDVP2(ψ,H,t2,N2,D_MPS)
+    lsψ2,lst2 = sweepTDVP2(ψ,H,t2,N2,D_MPS;TruncErr=TruncErr)
     lsψ1,lst1 = sweepTDVP1(deepcopy(lsψ2[end]),H,t1,N1,D_MPS)
     lsψ = vcat(lsψ2,lsψ1)
     lst = vcat(lst2,lst2[end] .+ lst1)
@@ -28,7 +28,6 @@ function sweepTDVP1(ψ::Vector,H::Vector,
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
     totaltruncerror = 0
     for iNt in 2:Nt
-        temptruncerr = 0
 
         start_time = time()
         println("evolution $iNt, t = $(round(lst[iNt];digits=3))/J")
@@ -70,24 +69,24 @@ end
 
 function sweepTDVP2(ψ::Vector,H::Vector,
     t::Number,Nt::Int64,
-    D_MPS::Int64)
+    D_MPS::Int64;TruncErr::Number=1e-5)
 
     L = length(H)
     
-    lsψ = Vector{Vector}(undef,Nt)
-    lst = collect(range(0,t,Nt))
+    lsψ = Vector{Vector}(undef,1)
+    lst = Vector{Float64}(undef,1)
     τ = t/(Nt-1)/2
 
     lsψ[1] = deepcopy(ψ)
+    lst[1] = 0.0
 
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
 
     totaltruncerror = 0
     for iNt in 2:Nt
-        temptruncerr = 0
 
         start_time = time()
-        println("evolution $iNt, t = $(round(lst[iNt];digits=3))/J")
+        println("evolution $iNt, t = $(round(lst[iNt-1]+2*τ;digits=3))/J")
 
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
@@ -116,7 +115,9 @@ function sweepTDVP2(ψ::Vector,H::Vector,
 
         println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
 
-        lsψ[iNt] = deepcopy(ψ)
+        totaltruncerror > TruncErr && break
+        push!(lsψ,deepcopy(ψ))
+        push!(lst,lst[end] + 2*τ)
     end
 
     return lsψ,lst
@@ -142,7 +143,6 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
     
     totaltruncerror = 0
     for iter in 1:MaxIter
-        temptruncerr = 0
 
         start_time = time()
         println("evolution $iter")
@@ -150,9 +150,9 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
             if iter != 1 && i==1
-                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS;τback=τ)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ/2,D_MPS;τback=τ/2)
             else
-                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS)
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ/2,D_MPS)
             end
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -162,9 +162,9 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             if i == L
-                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS;τback=τ)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ/2,D_MPS;τback=τ/2)
             else
-                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS)
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ/2,D_MPS)
             end
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
@@ -172,12 +172,10 @@ function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
         println("<<<<<< finished <<<<<<")
 
         println("evolution $iter finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
-        if totaltruncerror > TruncErr
-            break
-        else
-            push!(lsGt,InnerProd(ψ₀,ψ))
-            push!(lst,lst[end] + τ)
-        end
+        totaltruncerror > TruncErr && break
+        push!(lsGt,InnerProd(ψ₀,ψ))
+        push!(lst,lst[end] + τ)
+        # without a -iexp(...)
     end
 
     return lsGt,lst

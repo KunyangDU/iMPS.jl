@@ -10,7 +10,6 @@ function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS
     lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
     totaltruncerror = 0
     for i in 1:Nsweep
-        temptruncerr = 0
         println("sweep $i")
         start_time = time()
 
@@ -56,7 +55,6 @@ function sweepDMRG2(ψ::Vector,H::Vector,
 
     totaltruncerror = 0
     for i in 1:Nsweep
-        temptruncerr = 0
         println("sweep $i")
         start_time = time()
 

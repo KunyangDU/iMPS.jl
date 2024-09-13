@@ -2,6 +2,8 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 
 #include("../../calculations/iMPS/iMPS.jl")
 #include("../../calculations/trans Ising/model.jl")
+include("../../src/methods.jl")
+include("../model.jl")
 
 L = 21
 J = -1.0

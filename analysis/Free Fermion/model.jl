@@ -10,6 +10,10 @@ function SquaBand(k::Vector;t::Number = 1,a::Number=1)
     return E
 end
 
+function SquaBand(k::Number;t::Number = 1,a::Number=1)
+    return 2*t*cos(k*a)
+end
+
 
 function TheoOccupCurve(;t::Number = 1,a::Number = 1,n::Int64 = 500)
 

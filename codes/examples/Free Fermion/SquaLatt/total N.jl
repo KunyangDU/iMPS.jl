@@ -3,12 +3,12 @@ include("../model.jl")
 include("../../../src/iMPS.jl")
 
 
-Lx = 6
-Ly = 6
+Lx = 8
+Ly = 4
 
 t = 1
 
-D_MPS = 2^5
+D_MPS = 2^3
 
 Latt = load("examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsμ = load("examples/Free Fermion/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly).jld2")["lsμ"]

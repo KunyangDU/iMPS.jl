@@ -2,8 +2,8 @@ using TensorKit,JLD2,LinearAlgebra,FiniteLattices
 include("../model.jl")
 include("../../../src/iMPS.jl")
 
-Lx = 6
-Ly = 6
+Lx = 8
+Ly = 4
 Latt = YCSqua(Lx,Ly)
 @save "examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
 
@@ -15,7 +15,7 @@ lsμ = -4.0:0.2:4.0
 
 t = 1
 
-D_MPS = 2^5
+D_MPS = 2^3
 maxd = FindMaxDist(neighbor(Latt))
 D_MPO = d*(2*maxd + 2)
 

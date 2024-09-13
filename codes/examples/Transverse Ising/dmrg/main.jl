@@ -14,7 +14,7 @@ J = -1.0
 for h in 0.0
     
     H = HamMPO(L;J=J,h=h)
-    ψ = RandMPS(L,d)
+    ψ = RandMPS(L)
 
     LanczosLevel = 16
     Nsweep = 3

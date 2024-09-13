@@ -11,6 +11,12 @@ include("Obserables.jl")
 
 
 #= 
+MPO data matrix should be the hermitian conjugate of the 
+matrix of observables, i.e.
+M_{data} = M_{Obs}⁺
+=#
+
+#= 
 Suppose you have been familiar with TensorKit.jl
 Indexing formalism of TensorMap
 [] -> codomain, () -> domain

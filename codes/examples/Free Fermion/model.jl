@@ -162,7 +162,7 @@ function NMPO(L::Int64)
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            data = reshape([n I],d,D,d,1)
+            data = reshape([n I],d,1,d,D)
             M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
             data = reshape([I;n],d,D,d,1)
@@ -247,15 +247,15 @@ function CKMPO(Latt::AbstractLattice,k::Vector)
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            data = reshape([F a*exp(-1im*dot(k,coordinate(Latt,i)))],d,D,d,1)
+            data = reshape([a⁺*exp(-1im*dot(k,coordinate(Latt,i)))/sqrt(L) F],d,1,d,D)
             M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
-            data = reshape([a*exp(-1im*dot(k,coordinate(Latt,i)));I],d,D,d,1)
+            data = reshape([I;a⁺*exp(-1im*dot(k,coordinate(Latt,i)))/sqrt(L)],d,D,d,1)
             M = BlockMPO(data,phys,bond,phys,idt)
         else
             data = reshape([
-                F a*exp(-1im*dot(k,coordinate(Latt,i)))
-                I0 I
+                I I0
+                a⁺*exp(-1im*dot(k,coordinate(Latt,i)))/sqrt(L) F
             ],d,D,d,D)
             M = BlockMPO(data,phys,bond,phys,bond)
         end
@@ -287,15 +287,15 @@ function CKdaggMPO(Latt::AbstractLattice,k::Vector)
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            data = reshape([F a⁺*exp(1im*dot(k,coordinate(Latt,i)))],d,D,d,1)
+            data = reshape([a*exp(1im*dot(k,coordinate(Latt,i)))/sqrt(L) F],d,1,d,D)
             M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
-            data = reshape([a⁺*exp(1im*dot(k,coordinate(Latt,i)));I],d,D,d,1)
+            data = reshape([I;a*exp(1im*dot(k,coordinate(Latt,i)))/sqrt(L)],d,D,d,1)
             M = BlockMPO(data,phys,bond,phys,idt)
         else
             data = reshape([
-                F a⁺*exp(1im*dot(k,coordinate(Latt,i)))
-                I0 I
+                I I0
+                a*exp(1im*dot(k,coordinate(Latt,i)))/sqrt(L) F
             ],d,D,d,D)
             M = BlockMPO(data,phys,bond,phys,bond)
         end

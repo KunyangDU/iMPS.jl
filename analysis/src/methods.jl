@@ -20,3 +20,25 @@ function OccupCurve(dos::Vector)
     return cumsum(dos)
 end
 
+
+function vrange(beginvec::Union{Vector,Tuple},endvec::Union{Vector,Tuple};step::Int64 = 100)
+    return hcat([collect(beginvec .+ (endvec .- beginvec) .* t)  for t in range(0,1,step)]...)
+end
+
+function vrange(ipath::Matrix;eachstep::Number = 100)
+    finalpath = ipath[:,1]
+
+    for ii in 1:size(ipath)[2]-1
+        finalpath = hcat(finalpath,vrange(ipath[:,ii],ipath[:,ii+1];step=eachstep+1)[:,2:end])
+    end
+
+    return finalpath
+end
+
+function pathlength(finalpath::Matrix)
+    return cumsum(norm.(eachcol(hcat([0.0,0.0],diff(finalpath,dims = 2)))))
+end
+
+function Densen(a::Vector,N::Int64)
+    return range(extrema(a)...,N)
+end

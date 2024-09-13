@@ -3,7 +3,7 @@ include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
 Lx = 6
-Ly = 6
+Ly = 1
 
 t = 1
 
@@ -15,14 +15,14 @@ Nμ = load("../codes/examples/Free Fermion/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)
 nμ = Nμ / (Lx*Ly)
 dμ = lsμ[2]-lsμ[1]
 
-#= χ = diff(nμ) ./ diff(lsμ)
-centerμ = centralize(lsμ) =#
+
 ind = 1:4:length(lsμ)
 χ = diff(nμ[ind]) ./ diff(lsμ[ind])
 centerμ = centralize(lsμ[ind])
 
-lsE,dos,curve = TheoOccupCurve()
-
+theoμ = range(extrema(lsμ)...,100)
+theonμ = @. (asin(theoμ/(2t))-asin(theoμ[1]/(2t))) / pi
+theoχ = @. (1/pi) / sqrt((2*t)^2 - theoμ^2)
 
 width,height = 0.9 .* (300,200)
 
@@ -36,9 +36,7 @@ titlealign = :left,
 width = width,height = height)
 ylims!(axμ,1.1.*extrema(lsμ)...)
 scatterlines!(axμ,nμ,lsμ)
-#lines!(axμ,theonμ,theoμ,color = :red)
-
-lines!(axμ,curve,lsE,color = :red,linewidth = 2.0)
+lines!(axμ,theonμ,theoμ,color = :red,linewidth = 2.0)
 
 axχ = Axis(fig[1,2],
 xlabel = L"χ",

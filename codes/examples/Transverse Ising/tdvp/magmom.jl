@@ -4,7 +4,7 @@ include("../../../src/iMPS.jl")
 include("../model.jl")
 
 
-L = 21
+L = 11
 
 d = 2
 D_MPS = 2^3

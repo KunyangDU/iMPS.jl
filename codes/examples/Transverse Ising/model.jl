@@ -52,7 +52,7 @@ function MagmomMPO(L::Int64)
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            data = reshape([σz I],d,D,d,1)
+            data = reshape([σz I],d,1,d,D)
             M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
             data = reshape([I;σz],d,D,d,1)
