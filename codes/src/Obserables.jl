@@ -48,10 +48,30 @@ function GreenFuncRet(ψ::Vector,H::Vector,E0::Number,
     #@show lsGt₊ .+ lsGt₋
     #Gk = [sum(@. (-1im)*lsGt₊*exp(1im*(E+E0)*lst₊))*τ+sum(@. (-1im)*lsGt₋*exp(1im*(E-E0)*lst₊))*τ for E in lsE]
 
-    Gk = [sum(@. (-1im)*lsGt₊*exp(1im*(E+E0)*lst₊))*τ+sum(@. (-1im)*lsGt₋*exp(-1im*(E-E0)*lst₋))*τ for E in lsE]
+    Gk = [sum(@. (-1im)*lsGt₊*exp(1im*(E+E0)*lst₊))*τ + sum(@. (-1im)*lsGt₋*exp(-1im*(E-E0)*lst₋))*τ for E in lsE]
     #Gk = [sum(@. (-1im)*lsGt₋*exp(1im*(E-E0)*lst₋))*τ for E in lsE]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+
     return Gk
+end
+
+
+function DynStrucFac(ψ::Vector,H::Vector,E0::Number,
+    KOpr::Vector,lsE::Vector,D_MPS::Int64;
+    τ::Number = 1/abs(E0)/5,TruncErr::Number = 1e-5,MaxIter::Int64=30)
+    # calculate the G^{ret}(k,ω) with given cₖ,cₖ⁺
+    # how to choose evolve step τ?
+    # spectrum function is S(k,ω) = - Im G^{ret}(k,ω) / π
+    # |ψ⟩ = O|ψ₀⟩
+
+    totalSqω = Vector{ComplexF64}(undef,length(lsE))
+
+    ψE = VariContract(KOpr,ψ,D_MPS)
+
+    lsS₊,lst₊ = GreenFuncTDVP2(ψE,H,τ,TruncErr,MaxIter,D_MPS)
+
+    totalSqω = [2*real(sum(@. lsS₊*exp(1im*(E+E0)*lst₊))*τ) for E in lsE]
+
+    return totalSqω
 end
 
 

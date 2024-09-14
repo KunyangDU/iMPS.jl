@@ -2,12 +2,12 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 8
-Ly = 4
+Lx = 6
+Ly = 6
 
 t = 1
 
-D_MPS = 2^3
+D_MPS = 2^10
 
 lsμ = load("../codes/examples/Free Fermion/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly).jld2")["lsμ"]
 Nμ = load("../codes/examples/Free Fermion/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)x$(Ly).jld2")["Nμ"]

@@ -103,3 +103,51 @@ end
 function pathlength(finalpath::Matrix)
     return cumsum(norm.(eachcol(hcat([0.0,0.0],diff(finalpath,dims = 2)))))
 end
+
+function diagm(dg::Vector{T}) where T
+    L = length(dg)
+    mat = zeros(T,L,L)
+    for (dgi,dge) in enumerate(dg)
+        mat[dgi,dgi] = dge
+    end
+    return mat
+end
+
+function diagm(pair::Pair{Int64, Vector{T}}) where T
+    L = length(pair[2]) + abs(pair[1])
+    mat = zeros(T,L,L)
+    if pair[1] > 0
+        for (ii,ie) in enumerate(pair[2])
+            mat[ii,ii+pair[1]] = ie
+        end
+    elseif pair[1] < 0
+        for (ii,ie) in enumerate(pair[2])
+            mat[ii-pair[1],ii] = ie
+        end
+    else
+        mat = diagm(pair[2])
+    end
+    
+    return mat
+end
+
+function kdivide(kvecpath::Matrix,groupn::Int64)
+    nperg = div(size(kvecpath)[2] - 1,groupn)
+    kg = []
+    for ii in 1:groupn-1
+        push!(kg,kvecpath[:,(ii-1)*nperg .+ (1:nperg)])
+    end
+    push!(kg,kvecpath[:,end-nperg:end])
+
+    return kg
+end
+
+function kdivide(kr::Vector,groupn::Int64)
+    nperg = div(length(kr) - 1,groupn)
+    kg = []
+    for ii in 1:groupn-1
+        push!(kg,kr[(ii-1)*nperg .+ (1:nperg)])
+    end
+    push!(kg,kr[end-nperg:end])
+    return kg
+end

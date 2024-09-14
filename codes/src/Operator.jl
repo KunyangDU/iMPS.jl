@@ -100,14 +100,14 @@ function Opr1(d::Int64,data::Array)
     return BlockMPO(data,phys,phys)
 end
 
-function LocalMPO(L::Int64,Opr::Matrix)
+function UnivMPO(L::Int64,Opr::Matrix)
     Σ = [Opr for _ in 1:L]
     return LocalMPO(L,Σ)
 end
 
-function LocalMPO(L::Int64,Opr::Matrix,site::Int64)
+function LocalMPO(L::Int64,Opr::Matrix{T},site::Int64) where T
     d = size(Opr)[1]
-    Σ = [zeros(d,d) for _ in 1:L]
+    Σ = [zeros(T,d,d) for _ in 1:L]
     Σ[site] = Opr
     return LocalMPO(L,Σ)
 end

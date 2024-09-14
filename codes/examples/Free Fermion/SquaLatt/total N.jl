@@ -1,14 +1,13 @@
-using TensorKit,JLD2,LinearAlgebra,FiniteLattices
+using TensorKit,JLD2,FiniteLattices
 include("../model.jl")
 include("../../../src/iMPS.jl")
 
-
-Lx = 8
-Ly = 4
+Lx = 6
+Ly = 6
 
 t = 1
 
-D_MPS = 2^3
+D_MPS = 2^10
 
 Latt = load("examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsμ = load("examples/Free Fermion/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly).jld2")["lsμ"]

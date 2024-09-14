@@ -29,7 +29,7 @@ function Lanczos(M::AbstractTensorMap,level::Int64)
         end
     end
     
-    T = diagm(0 => α, -1 => β, 1 => β)
+    T = diagm(0 => α) +diagm(-1 => β) + diagm(1 => β)
     return T, Q
     
 end

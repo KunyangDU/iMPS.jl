@@ -17,7 +17,6 @@ centerμ = centralize(lsμ)
 
 width,height = 0.9 .* (300,200)
 
-
 xtickvalues = [0,pi,2*pi,(2+sqrt(2))*pi]
 xticklabels = [L"(0,0)",L"(\pi,0)",L"(\pi,\pi)",L"(0,0)"]
 

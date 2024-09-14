@@ -277,7 +277,10 @@ height=9,scale=0.5,debug]{beamerposter}
 	\end{itemize}
 \end{frame}
 
-\begin{frame}
+
+
+\begin{comment}
+	\begin{frame}
 	\frametitle{Results: Spectrum Function}
 	\begin{itemize}
 		\item Set
@@ -287,6 +290,36 @@ height=9,scale=0.5,debug]{beamerposter}
 		\item Simulation results: $S_{theo}(k,\omega) = \delta(\omega - \lambda(k))$
 		\begin{figure}[H]
 			\includegraphics[width=0.85 \linewidth]{images/Skω_D=8_L=11_J=1.0.pdf}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+\end{comment}
+
+\begin{frame}
+	\frametitle{Model: Heisenberg Chain}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = -J\sum_{i=1}^{N-1}\vb*{\sigma}_i \cdot \vb*{\sigma}_{i+1}
+		\end{equation}
+		we always choose $J = \pm 1.0$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results: Dynamical Spin Structure Factor }
+	\begin{itemize}
+		\item Set
+		\begin{gather}
+			J=\pm 1.0,\quad S(\vb{q},\omega) = \int_{-\infty}^{+\infty}\expval{\vb*{\sigma}_{\vb{q}}(t)\cdot \vb*{\sigma}_{-\vb{q}}(0)}\mathrm{e}^{i\omega t}\dd t
+		\end{gather}
+		\item Simulation results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_8x1_J=((1, 1, 1)).pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_8x1_J=((-1, -1, -1)).pdf}}
 		\end{figure}
 	\end{itemize}
 \end{frame}

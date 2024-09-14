@@ -127,11 +127,12 @@ end
 function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
     TruncErr::Number,MaxIter::Int64,D_MPS::Int64)
     # why truncerr is always 0?
+    # calculate the ⟨ψ| exp(-iHt) |ψ⟩
 
     L = length(H)
     
     lsGt = Vector{ComplexF64}(undef,1)
-    lsGt[1] = 0.5 + 0.0im # avoid the double count when considering the inverse time evolve
+    lsGt[1] = InnerProd(ψ,ψ) / 2
     lst = Vector{Float64}(undef,1)
     lst[1] = 0.0
 
