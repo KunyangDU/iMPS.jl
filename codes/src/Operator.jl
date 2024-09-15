@@ -152,3 +152,42 @@ end
 
     return finalMPS
 end =#
+
+function KOprMPO(Latt::AbstractLattice,Opr::Matrix,kv::Vector,sign::Int64;
+    d::Int64 = 2,D::Int64 = 2,
+    string::Matrix = diagm(ones(size(Opr)[1])))
+
+    # take h.c. of Opr automatically
+    # sign denotes the +- sign in the exp(...)
+
+    L = size(Latt)
+
+    I = diagm(ones(d))
+    I0 = zeros(d,d)
+
+    MPO = Vector{AbstractTensorMap}(undef, L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
+    for i in 1:L
+        if i == 1
+            data = reshape([Opr'*exp(sign*1im*dot(kv,coordinate(Latt,i)))/sqrt(L) string],d,1,d,D)
+            M = BlockMPO(data,phys,idt,phys,bond)
+        elseif i == L
+            data = reshape([I;Opr'*exp(sign*1im*dot(kv,coordinate(Latt,i)))/sqrt(L)],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
+        else
+            data = reshape([
+                I I0
+                Opr'*exp(sign*1im*dot(kv,coordinate(Latt,i)))/sqrt(L) string
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
+        end
+        MPO[i] = M
+    end
+    println("MPO constructed")
+
+    return MPO
+    
+end

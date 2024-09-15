@@ -3,18 +3,22 @@ using TensorKit,JLD2,FiniteLattices
 include("../../../src/iMPS.jl")
 include("../model.jl")
 
-Lx = 8
-Ly = 1
+Lx = 4
+Ly = 4
 
-Jx = 1
+#= Jx = -1
 Jy = Jx
-Jz = Jx
+Jz = Jx =#
 
 d = 2
 D_MPS = 2^3
 
 TruncErr = 1e-2
 MaxIter = 100
+
+for Jx in [-1,1]
+Jy = Jx
+Jz = Jx
 
 Latt = load("examples/Heisenberg/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsE = load("examples/Heisenberg/data/$(Lx)x$(Ly)/lsE_D=$(D_MPS)_$(Lx)x$(Ly)_J=($((Jx,Jy,Jz))).jld2")["lsE"]
@@ -23,11 +27,12 @@ H = load("examples/Heisenberg/data/$(Lx)x$(Ly)/H_$(Lx)x$(Ly)_J=($((Jx,Jy,Jz))).j
 #= ψ = RandMPS(Lx*Ly)
 ψ,lsE = sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS) =#
 
-ipath = [0 2*pi;0 0]
-#ipath = [0 pi pi 0;0 0 pi 0]
-kvecpath = vrange(ipath;eachstep = 2*size(Latt))
+#ipath = [0 2*pi;0 0]
+ipath = [0 pi pi 0;0 0 pi 0]
+kvecpath = vrange(ipath;eachstep = div(size(Latt),2))
 kr = pathlength(kvecpath)
-lsω = collect(0.0:0.01:1.2)*4*pi
+ωscale = 4*20 # 4*π for 1d, 4*8 for 2d
+lsω = collect(0.0:0.01:1.2)*ωscale
 
 Skω = zeros(length(kr),length(lsω))
 
@@ -53,3 +58,4 @@ end
 @save "examples/Heisenberg/data/$(Lx)x$(Ly)/Skω_D=$(D_MPS)_$(Lx)x$(Ly)_J=($((Jx,Jy,Jz))).jld2" Skω
 @save "examples/Heisenberg/data/$(Lx)x$(Ly)/lsω_$(Lx)x$(Ly).jld2" lsω
 @save "examples/Heisenberg/data/$(Lx)x$(Ly)/kr_$(Lx)x$(Ly).jld2" kr
+end

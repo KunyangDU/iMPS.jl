@@ -81,6 +81,8 @@ function sweepDMRG2(ψ::Vector,H::Vector,
 
         println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
         lsE[i] = Eg
+
+        GC.gc()
     end
 
     return ψ,lsE

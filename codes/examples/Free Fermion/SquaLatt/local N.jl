@@ -1,4 +1,4 @@
-using TensorKit,JLD2,LinearAlgebra,FiniteLattices
+using TensorKit,JLD2,FiniteLattices
 include("../model.jl")
 include("../../../src/iMPS.jl")
 

@@ -1,4 +1,4 @@
-using TensorKit,JLD2,LinearAlgebra,FiniteLattices,CairoMakie
+using TensorKit,JLD2,FiniteLattices,CairoMakie
 include("../model.jl")
 include("../../../src/iMPS.jl")
 

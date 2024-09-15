@@ -17,7 +17,7 @@ dμ = lsμ[2]-lsμ[1]
 
 #= χ = diff(nμ) ./ diff(lsμ)
 centerμ = centralize(lsμ) =#
-ind = 1:4:length(lsμ)
+ind = 1:3:length(lsμ)
 χ = diff(nμ[ind]) ./ diff(lsμ[ind])
 centerμ = centralize(lsμ[ind])
 

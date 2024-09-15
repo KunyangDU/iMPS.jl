@@ -14,6 +14,7 @@ include("Obserables.jl")
 MPO data matrix should be the hermitian conjugate of the 
 matrix of observables, i.e.
 M_{data} = M_{Obs}⁺
+under this convention, the evolution operator is exp(i)
 =#
 
 #= 

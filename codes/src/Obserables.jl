@@ -40,8 +40,8 @@ function GreenFuncRet(ψ::Vector,H::Vector,E0::Number,
 
     Gk = Vector{ComplexF64}(undef,length(lsE))
 
-    ψ₊E = VariContract(CKdagg,ψ,D_MPS)
-    ψ₋E = VariContract(CK,ψ,D_MPS)
+    ψ₊E = VariContract(CKdagg,ψ,D_MPS;d=d)
+    ψ₋E = VariContract(CK,ψ,D_MPS;d=d)
 
     lsGt₊,lst₊ = GreenFuncTDVP2(ψ₊E,H,τ,TruncErr,MaxIter,D_MPS)
     lsGt₋,lst₋ = GreenFuncTDVP2(ψ₋E,H,-τ,TruncErr,MaxIter,D_MPS)
