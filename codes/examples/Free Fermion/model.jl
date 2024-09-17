@@ -1,4 +1,6 @@
-
+global F = [-1 0;0 1]
+global a⁺ = [0 1;0 0]
+global a = collect(a⁺')
 
 function HamMPO(Latt::AbstractLattice;
     t::Number=1,μ::Number=0,
@@ -9,10 +11,6 @@ function HamMPO(Latt::AbstractLattice;
     # F = 1 - 2n = 1 - 2σ⁺σ⁻ -> -σz
     # https://zhuanlan.zhihu.com/p/386386413
     # https://itensor.org/docs.cgi?page=tutorials/fermions
-
-    F = -[1 0;0 -1]
-    a⁺ = [0 1;0 0]
-    a = a⁺'
 
     maxd = FindMaxDist(neighbor(Latt))
     #D_MPO = d*(2*maxd + 2)

@@ -21,11 +21,12 @@ function HamMPO(Latt::AbstractLattice;
     # onsite μ
     mode = zeros(D_MPO,D_MPO)
     mode[end,1] = 1
-    HM[1] = HM[1] .+ kron(mode[end:end,:],-μ*(aup'*F*aup + adown'*F*adown))
+    μterm = -μ*(aup'*aup + adown'*adown)
+    HM[1] = HM[1] .+ kron(mode[end:end,:],μterm)
     for i in eachindex(HM)[2:end-1]
-        HM[i] = HM[i] .+ kron(mode,-μ*(aup'*F*aup + adown'*F*adown))
+        HM[i] = HM[i] .+ kron(mode,μterm)
     end
-    HM[end] = HM[end] .+ kron(mode[:,1:1],-μ*(aup'*F*aup + adown'*F*adown))
+    HM[end] = HM[end] .+ kron(mode[:,1:1],μterm)
 
     # NN hopping
 
@@ -58,11 +59,12 @@ function HamMPO(Latt::AbstractLattice;
     # onsite U
     mode = zeros(D_MPO,D_MPO)
     mode[end,1] = 1
-    HM[1] = HM[1] .+ kron(mode[end:end,:],U*aup'*F*aup*adown'*F*adown)
+    Uterm = U*aup'*aup*adown'*adown
+    HM[1] = HM[1] .+ kron(mode[end:end,:],Uterm)
     for i in eachindex(HM)[2:end-1]
-        HM[i] = HM[i] .+ kron(mode,U*aup'*F*aup*adown'*F*adown)
+        HM[i] = HM[i] .+ kron(mode,Uterm)
     end
-    HM[end] = HM[end] .+ kron(mode[:,1:1],U*aup'*F*aup*adown'*F*adown)
+    HM[end] = HM[end] .+ kron(mode[:,1:1],Uterm)
 
     MPO = Vector{AbstractTensorMap}(undef,size(Latt))
     

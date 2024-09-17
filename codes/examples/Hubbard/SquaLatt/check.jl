@@ -14,7 +14,7 @@ lsμ = -4.0:0.2:4.0
 
 t = 1
 U = 0
-μ = 0.0
+μ = 1.0
 
 D_MPS = 2^3
 maxd = FindMaxDist(neighbor(Latt))
@@ -26,7 +26,7 @@ Nsweep = 3
 
 H = HamMPO(Latt;t=t,μ=μ,U=U,d=d)
 
-showBlockMPO(H[1])
+#showBlockMPO(H[1])
 1
 
 F = diagm([1,-1,-1,1])
@@ -40,11 +40,11 @@ HM = InitHamMatri(size(Latt),d,D_MPO)
 # onsite μ
 mode = zeros(D_MPO,D_MPO)
 mode[end,1] = 1
-HM[1] = HM[1] .+ kron(mode[end:end,:],-μ*(aup'*F*aup + adown'*F*adown))
+HM[1] = HM[1] .+ kron(mode[end:end,:],-μ*(aup'*aup + adown'*adown))
 for i in eachindex(HM)[2:end-1]
-    HM[i] = HM[i] .+ kron(mode,-μ*(aup'*F*aup + adown'*F*adown))
+    HM[i] = HM[i] .+ kron(mode,-μ*(aup'*aup + adown'*adown))
 end
-HM[end] = HM[end] .+ kron(mode[:,1:1],-μ*(aup'*F*aup + adown'*F*adown))
+HM[end] = HM[end] .+ kron(mode[:,1:1],-μ*(aup'*aup + adown'*adown))
 
 # NN hopping
 
@@ -77,10 +77,11 @@ end
 # onsite U
 mode = zeros(D_MPO,D_MPO)
 mode[end,1] = 1
-HM[1] = HM[1] .+ kron(mode[end:end,:],U*aup'*F*aup*adown'*F*adown)
+HM[1] = HM[1] .+ kron(mode[end:end,:],U*aup'*aup*adown'*adown)
 for i in eachindex(HM)[2:end-1]
-    HM[i] = HM[i] .+ kron(mode,U*aup'*F*aup*adown'*F*adown)
+    HM[i] = HM[i] .+ kron(mode,U*aup'*aup*adown'*adown)
 end
-HM[end] = HM[end] .+ kron(mode[:,1:1],U*aup'*F*aup*adown'*F*adown)
+HM[end] = HM[end] .+ kron(mode[:,1:1],U*aup'*aup*adown'*adown)
 
-HM[3][end-d+1:end,9*d .+ (1:4*d)]
+HM[3][end-d+1:end,0*d .+ (1:4*d)]
+

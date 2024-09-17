@@ -1,17 +1,18 @@
-using TensorKit,JLD2,FiniteLattices
-include("../model.jl")
+using FiniteLattices
 include("../../../src/iMPS.jl")
+include("../model.jl")
 
-Lx = 6
+
+Lx = 4
 Ly = 1
 Latt = YCSqua(Lx,Ly)
 @save "examples/Hubbard/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
 t = 1
-U = 8
+U = 0
 d = 4
 
-lsμ = -4.0:0.2:4.0
-@save "examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly).jld2" lsμ
+lsμ = (U/4 - 4):0.5:(3*U/4 + 4)
+@save "examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2" lsμ
 
 
 D_MPS = 20
@@ -21,7 +22,7 @@ D_MPO = 4*maxd + 2
 LanczosLevel = D_MPO*d
 Nsweep = 5
 
-for μ in [0.0]
+for μ in lsμ
     @show μ
     H = HamMPO(Latt;t=t,μ=μ,U=U,d=d)
     ψ = RandMPS(Lx*Ly;d=d)

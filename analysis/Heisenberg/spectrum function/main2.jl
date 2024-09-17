@@ -5,7 +5,7 @@ include("../model.jl")
 Lx = 4
 Ly = 4
 
-Jx = -1
+Jx = 1
 Jy = Jx
 Jz = Jx
 
@@ -46,11 +46,11 @@ theokr = pathlength(kvecpath)
 gamma = @. (cos(kvecpath[1,:]) + cos(kvecpath[2,:]))/2
 
 
-edge = @. abs(Jx)*sqrt((1-gamma)*(1+gamma))*1
-lines!(ax,theokr,edge,color = :red,linestyle = :dash)
-
-#= edge = @. abs(Jx)*(1-gamma)*2
+#= edge = @. abs(Jx)*sqrt((1-gamma)*(1+gamma))*1
 lines!(ax,theokr,edge,color = :red,linestyle = :dash) =#
+
+edge = @. abs(Jx)*(1-gamma)*1
+lines!(ax,theokr,edge,color = :red,linestyle = :dash)
 
 ylims!(ax,0,3)
 

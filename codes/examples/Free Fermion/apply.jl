@@ -3,22 +3,27 @@ using TensorKit,JLD2,FiniteLattices,CairoMakie
 include("model.jl")
 include("../../src/iMPS.jl")
 
-#= function diagm(pairs...)
-    L = length(pairs[1][2]) + pairs[1][1]
-    mat = zeros(L,L)
-    for pair in pairs
-        mat += diagm(pair)
-    end
-    return mat
-end =#
-
 Lx = 6
-Ly = 6
+Ly = 1
 Latt = YCSqua(Lx,Ly)
+d = 2
+μ= 0.0
+t=1
 
-ipath = [0 pi pi 0;0 0 pi 0]
-kvecpath = vrange(ipath;eachstep = 2*size(Latt)-1)
-kr = pathlength(kvecpath)
+D_MPS = 2^3
 
-kvecpathg = kdivide(kvecpath,size(ipath)[2]-1)
-krg = kdivide(kr,size(ipath)[2]-1)
+ψ = load("examples/Free Fermion/data/$(Lx)x$(Ly)/ψ_D=$(D_MPS)_$(Lx)x$(Ly)_t=$(t)_μ=$(μ).jld2")["ψ"]
+Latt = load("examples/Free Fermion/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
+
+kv = [0,0]
+ck = KOprMPO(Latt,a,kv,-1;d=d,string = F)
+ckdagg = KOprMPO(Latt,a⁺,kv,1;d=d,string = F)
+
+N = NMPO(size(Latt))
+
+ckψ = VariContract(ck,ψ,D_MPS)
+ckdaggψ = VariContract(ckdagg,ψ,D_MPS)
+
+InnerProd(ckψ,ckψ),InnerProd(ckdaggψ,ckdaggψ),QuantUniv(ckψ,N),QuantUniv(ckdaggψ,N),QuantUniv(ψ,N)
+
+

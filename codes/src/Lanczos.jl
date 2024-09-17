@@ -41,7 +41,7 @@ function groundEig(M::AbstractTensorMap, level::Int64)
     return Eg, Ev' / norm(Ev)
 end
 
-#= function Lanczos(A::AbstractMatrix, k::Int)
+function Lanczos(A::AbstractMatrix, k::Int)
     n = size(A, 1)
     Q = zeros(n, k)
     α = zeros(k)
@@ -72,7 +72,7 @@ end
         end
     end
     
-    T = diagm(0 => α, -1 => β, 1 => β)
+    T = diagm(0 => α) +diagm(-1 => β) + diagm(1 => β)
     return T, Q
 end
 
@@ -80,5 +80,5 @@ function groundEig(A::AbstractMatrix, k::Int)
     T, Q = Lanczos(A, k)
     λ, v = eigen(T)
     return argmin(λ) |> x -> (λ[x], Q * v[:, x])
-end =#
+end
 

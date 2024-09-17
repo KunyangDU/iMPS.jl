@@ -5,7 +5,7 @@ include("../model.jl")
 Lx = 8
 Ly = 1
 
-Jx = -1
+Jx = 1
 Jy = Jx
 Jz = Jx
 
