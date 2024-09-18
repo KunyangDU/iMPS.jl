@@ -37,6 +37,28 @@ function LocalMerge(ψ1::AbstractTensorMap{ComplexSpace,0,3},
     return permute(ψm,(),(1,2,3,4))
 end
 
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,1,1},
+    Opr1::AbstractTensorMap{ComplexSpace,1,3},
+    Opr2::AbstractTensorMap{ComplexSpace,2,2},
+    EnvR::AbstractTensorMap{ComplexSpace,1,1}
+    )
+
+    @tensor tempMPO[-1,-2,-3,-4,-5,-6] ≔ EnvL[1,-3]*Opr1[-2,1,-4,2]*Opr2[-1,2,-5,3]*EnvR[3,-6]
+    return permute(tempMPO,(1,2),(3,4,5,6))
+end
+
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,1,1},
+    Opr1::AbstractTensorMap{ComplexSpace,2,2},
+    Opr2::AbstractTensorMap{ComplexSpace,1,3},
+    EnvR::AbstractTensorMap{ComplexSpace,1,1}
+    )
+
+    @tensor tempMPO[-1,-2,-3,-4,-5,-6] ≔ EnvL[1,-3]*Opr1[2,-2,1,-4]*Opr2[-1,2,-5,3]*EnvR[3,-6]
+    return permute(tempMPO,(1,2),(3,4,5,6))
+end
+
 
 function InnerProd(ψ₁::Vector,ψ₂::Vector)
     EnvL = InitialLeftEnv(;order=2)
@@ -44,47 +66,6 @@ function InnerProd(ψ₁::Vector,ψ₂::Vector)
     innerprod = @tensor EnvL[1,3]*ψ₁[1][1,5,2]*ψ₂[1]'[3,5,4]*EnvR[2,4]
     return innerprod[1]
 end
-
-function VariContract(Opr::Vector,ψ₀::Vector,D_MPS::Int64;
-    d::Number=2,MaxIter::Int64=4)
-
-    L = length(Opr)
-    ψtest = RandMPS(L;d=d)
-
-    # calculate the Environment
-    lsEnv = vcat(LeftLsEnv(ψ₀,Opr,ψtest,1),RightLsEnv(ψ₀,Opr,ψtest,1))
-    totaltruncerror = 0
-    for iter in 1:MaxIter
-        MPS = deepcopy(ψ₀)
-        println("sweep $iter")
-        start_time = time()
-
-        println(">>>>>> begin >>>>>>")
-        for i in 1:L-1
-            Ev = Apply(LocalMerge(MPS[i:i+1]...),EffHam(Opr[i:i+1],lsEnv[i],lsEnv[i+2]))
-            ψtest[i:i+1],temptruncerr_test = RightSVD(Ev,D_MPS)
-            MPS[i:i+1],temptruncerr_MPS = RightMove(MPS[i+1],MPS[i],D_MPS)
-            lsEnv[i+1] = PushRight(lsEnv[i],MPS[i],Opr[i],ψtest[i])
-            totaltruncerror = max(totaltruncerror,temptruncerr_test,temptruncerr_MPS)
-        end 
-        println(">>>>>> finished >>>>>>")        
-        
-        println("<<<<<< begin <<<<<<")
-        for i in L:-1:2
-            Ev = Apply(LocalMerge(MPS[i-1:i]...),EffHam(Opr[i-1:i],lsEnv[i-1],lsEnv[i+1]))
-            ψtest[i-1:i],temptruncerr_test = LeftSVD(Ev,D_MPS)
-            MPS[i-1:i],temptruncerr_MPS = LeftMove(MPS[i-1],MPS[i],D_MPS)
-            lsEnv[i] = PushLeft(lsEnv[i+1],MPS[i],Opr[i],ψtest[i])
-            totaltruncerror = max(totaltruncerror,temptruncerr_test,temptruncerr_MPS)
-        end
-        println("<<<<<< finished <<<<<<")
-
-        println("sweep $iter finished, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
-    end
-
-    return ψtest
-end
-
 
 function vrange(beginvec::Union{Vector,Tuple},endvec::Union{Vector,Tuple};step::Int64 = 100)
     return hcat([collect(beginvec .+ (endvec .- beginvec) .* t)  for t in range(0,1,step)]...)
@@ -151,3 +132,16 @@ function kdivide(kr::Vector,groupn::Int64)
     push!(kg,kr[end-nperg:end])
     return kg
 end
+
+
+function canonicalize(Opr::Vector{AbstractTensorMap{ComplexSpace,2,2}})
+
+    Opr = convert(Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}},Opr)
+    Opr[end] = Move(Opr[end],InitialEnv(Vector{AbstractTensorMap{ComplexSpace,1,3}}(undef,1)))[1]
+    for i in length(Opr):-1:2
+        Opr[i-1:i] = Move(Opr[i-1:i]...)
+    end
+
+    return Opr
+end
+

@@ -8,6 +8,7 @@ include("Move.jl")
 include("TDVP.jl")
 include("Tools.jl")
 include("Obserables.jl")
+include("Variation.jl")
 
 
 #= 
@@ -25,32 +26,32 @@ Indexing formalism of TensorMap
 I. MPS
     1. Right Orthogonal:
            ___
-    (1) → |   | → [1]
+    (2) → |   | → [1]
            ‾‾‾
             ↑
-           (2)
-    i.e. TensorMap{ [1] , (1) ⊗ (2) }
+           (3)
+    i.e. TensorMap{ [1] , (2) ⊗ (3) }
            [2] 
             ↑
            ___
-    [1] ← |   | ← (1)
+    [1] ← |   | ← (3)
            ‾‾‾
 
-    i.e. TensorMap{ [1] ⊗ [2], (1)  }
+    i.e. TensorMap{ [1] ⊗ [2], (3)  }
     -------------------
     2. Left Orthogonal:
            ___
-    [1] ← |   | ← (2)
+    [1] ← |   | ← (3)
            ‾‾‾
             ↑
-           (1)
-    i.e. TensorMap{ [1] , (1) ⊗ (2) }
+           (2)
+    i.e. TensorMap{ [1] , (2) ⊗ (3) }
            [1]
             ↑
            ___
-    (1) → |   | → [2]
+    (3) → |   | → [2]
            ‾‾‾
-    i.e. TensorMap{ [1] ⊗ [2]  , (1) }
+    i.e. TensorMap{ [1] ⊗ [2]  , (3) }
     -------------------
     3. Center:
            ___
@@ -94,15 +95,81 @@ I. MPS
     i.e. TensorMap{ [1] ⊗ [2] ⊗ [3] ⊗ [4] }
 
 II.MPO
-    1. Local Hamiltonian
+    1.1 Local MPO (Right Orthogonal)
            [2]
             ↑
            ___
-    (1) → |   | → [1]
+    (3) → |   | → [1]
            ‾‾‾
             ↑
-           (2)
-    i.e. TensorMap{ [1] ⊗ [2], (1) ⊗ (2) }
+           (4)
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) }
+
+           (4)
+            ↓
+           ___
+    [1] ← |   | ← (3)
+           ‾‾‾
+            ↓
+           [2]
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) }
+
+    1.2 Local MPO (Left Orthogonal)
+           [1]
+            ↑
+           ___
+    [2] ← |   | ← (4)
+           ‾‾‾
+            ↑
+           (3)
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) }
+
+           (3)
+            ↓
+           ___
+    (4) → |   | → [2]
+           ‾‾‾
+            ↓
+           [1]
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) }
+
+    1.3 Local MPO (Center Orthogonal)
+           [1]
+            ↑
+           ___
+    (2) → |   | ← (4)
+           ‾‾‾
+            ↑
+           (3)
+    i.e. TensorMap{ [1], (2) ⊗ (3) ⊗ (4) }
+
+           (4)
+            ↓
+           ___
+    [1] ← |   | → [3]
+           ‾‾‾
+            ↓
+           [2]
+    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3], (4) }
+
+    1.4 Local 2 site MPO (Center Orthogonal)
+           [2] [1]
+            ↑   ↑
+           _______
+    (3) → |       | ← (6)
+           ‾‾‾‾‾‾‾
+            ↑   ↑
+           (4) (5)
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) ⊗ (5) ⊗ (6) }
+
+           (4)
+            ↓
+           ___
+    [1] ← |   | → [3]
+           ‾‾‾
+            ↓
+           [2]
+    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3], (4) }
 
     2. 0-site Effective Hamiltonian
          [1] [2]
@@ -111,8 +178,8 @@ II.MPO
         |       |
          ‾‾‾‾‾‾‾
           ↑   ↑
-         (1) (2)
-    i.e. TensorMap{ [1] ⊗ [2], (1) ⊗ (2) }
+         (3) (4)
+    i.e. TensorMap{ [1] ⊗ [2], (3) ⊗ (4) }
 
     3. 1-site Effective Hamiltonian
          [1] [2] [3]
@@ -121,8 +188,8 @@ II.MPO
         |           |
          ‾‾‾‾‾‾‾‾‾‾‾
           ↑   ↑   ↑
-         (1) (2) (3)
-    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3], (1) ⊗ (2) ⊗ (3) }
+         (4) (5) (6)
+    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3], (4) ⊗ (5) ⊗ (6) }
 
     4. 2-site Effective Hamiltonian
          [1] [2] [3] [4]
@@ -131,25 +198,37 @@ II.MPO
         |               |
          ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
           ↑   ↑   ↑   ↑
-         (1) (2) (3) (4)
-    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3] ⊗ [4], (1) ⊗ (2) ⊗ (3) ⊗ (4) }
+         (5) (6) (7) (8)
+    i.e. TensorMap{ [1] ⊗ [2] ⊗ [3] ⊗ [4], (5) ⊗ (6) ⊗ (7) ⊗ (8) }
 
 III.Environment
     1. Right Environment
            ___
     [1] ← |   |
-    (1) → |   |
+    (2) → |   |
+    (3) → |   |
+           ‾‾‾
+    i.e. TensorMap{ [1] , (2) ⊗ (3) }
+
+           ___
+    [1] ← |   |
     (2) → |   |
            ‾‾‾
-    i.e. TensorMap{ [1] , (1) ⊗ (2) }
+    i.e. TensorMap{ [1] , (2) }
 
     2. Left Environment
            ___
           |   | → [1]
           |   | → [2]
-          |   | ← (1)
+          |   | ← (3)
            ‾‾‾
-    i.e. TensorMap{ [1] ⊗ [2], (1)  }
+    i.e. TensorMap{ [1] ⊗ [2], (3)  }
+
+           ___
+          |   | → [1]
+          |   | ← (2)
+           ‾‾‾
+    i.e. TensorMap{ [1] , (2)  }
 
  =#
 

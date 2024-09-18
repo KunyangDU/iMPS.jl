@@ -191,3 +191,24 @@ function KOprMPO(Latt::AbstractLattice,Opr::Matrix,kv::Vector,sign::Int64;
     return MPO
     
 end
+
+function RandMPO(L::Int64,d::Int64)
+
+    MPO = Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}}(undef,L)
+
+    idt = ℂ^1
+    phys = (ℂ^d)'
+
+
+    MPO[1] = TensorMap(rand(ComplexF64,1,d,1,d),phys,idt ⊗ phys ⊗ idt)
+    
+    for i in 2:L
+        MPO[i] = let
+            TensorMap(rand(ComplexF64,1,d,1,d),phys ⊗ idt,phys ⊗ idt)
+        end
+    end
+    println("MPO constructed")
+
+    return MPO
+    
+end

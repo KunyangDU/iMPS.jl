@@ -49,7 +49,7 @@ function HamMPO(Latt::AbstractLattice;
         end
     end
 
-    MPO = Vector{AbstractTensorMap}(undef,size(Latt))
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef,size(Latt))
     
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -115,7 +115,7 @@ function LocalNumMPO(L::Int64,site::Int64;)
     d = 2
     D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -153,7 +153,7 @@ function NMPO(L::Int64)
     d = 2
     D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -194,7 +194,7 @@ function LocalNumMPO(L::Int64,site::Int64;)
     d = 2
     D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -225,6 +225,7 @@ function LocalNMPO(d::Int64=2,data::Array=[1 0;0 0])
     return Opr1(d,data)
 end
 
+#= 
 function CKMPO(Latt::AbstractLattice,k::Vector)
 
     L = size(Latt)
@@ -303,7 +304,7 @@ function CKdaggMPO(Latt::AbstractLattice,k::Vector)
 
     return MPO
     
-end
+end =#
 
 
 

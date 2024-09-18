@@ -1,6 +1,6 @@
 using TensorKit,JLD2,FiniteLattices
-include("../model.jl")
 include("../../../src/iMPS.jl")
+include("../model.jl")
 
 Lx = 8
 Ly = 1
@@ -9,7 +9,7 @@ t = 1
 U = 8
 d = 4
 
-D_MPS = 2^5
+D_MPS = 2^6
 
 Latt = load("examples/Hubbard/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsμ = load("examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2")["lsμ"]

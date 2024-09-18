@@ -8,7 +8,7 @@ U = 8
 
 t = 1
 
-D_MPS = 20
+D_MPS = 2^6
 
 lsμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2")["lsμ"]
 Nμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).jld2")["Nμ"]

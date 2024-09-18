@@ -35,7 +35,7 @@ Si = zeros(3,size(Latt))
 
 for i in 1:size(Latt)
     for (ind,σi) in enumerate(σs)
-        Szi = LocalMPO(size(Latt),[1 0;0 0],i)
+        Szi = LocalMPO(size(Latt),σi,i)
         Si[ind,i] = QuantUniv(ψ,Szi)
     end
 end

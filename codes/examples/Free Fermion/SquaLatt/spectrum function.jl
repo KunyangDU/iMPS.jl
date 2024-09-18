@@ -34,8 +34,6 @@ Skω = Matrix{Float64}(undef,length(kr),length(lsω))
 for (ki,kv) in enumerate(kvecpath |> x -> collect.(eachcol(x)))
     println("--------------$(ki)----------------")
 
-#=     ck = CKMPO(Latt,kv)
-    ckdagg = CKdaggMPO(Latt,kv) =#
     ck = KOprMPO(Latt,a,kv,-1;d=d,string = F)
     ckdagg = KOprMPO(Latt,a⁺,kv,1;d=d,string = F)
 
@@ -43,9 +41,9 @@ for (ki,kv) in enumerate(kvecpath |> x -> collect.(eachcol(x)))
     Skω[ki,:] = -imag.(Gk) / pi
 end
 
-@save "examples/Free Fermion/data/$(Lx)x$(Ly)/Skω_D=$(D_MPS)_$(Lx)x$(Ly).jld2" Skω
+#= @save "examples/Free Fermion/data/$(Lx)x$(Ly)/Skω_D=$(D_MPS)_$(Lx)x$(Ly).jld2" Skω
 @save "examples/Free Fermion/data/$(Lx)x$(Ly)/lsω_$(Lx)x$(Ly).jld2" lsω
-@save "examples/Free Fermion/data/$(Lx)x$(Ly)/kr_$(Lx)x$(Ly).jld2" kr
+@save "examples/Free Fermion/data/$(Lx)x$(Ly)/kr_$(Lx)x$(Ly).jld2" kr =#
 
 
 

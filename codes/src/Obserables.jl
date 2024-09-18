@@ -24,9 +24,20 @@ function Quant1(ψ::Vector,Q::AbstractTensorMap{ComplexSpace,1,1},D_MPS::Int64)
     return lsQi
 end
 
-function QuantUniv(ψ::Vector,Q::Vector)
-    effQ = EffHam(Q[1],LeftEnv(ψ,Q,1),RightEnv(ψ,Q,ψ,1))
-    q = @tensor ψ[1][1,5,2]*effQ[1,5,2,3,6,4]*ψ[1]'[3,6,4]
+function QuantUniv(ψ::Vector,Q::Vector{AbstractTensorMap{ComplexSpace,2,2}})
+    EnvL = LeftEnv(ψ,Q,1)
+    EnvR = RightEnv(ψ,Q,1)
+    q = @tensor EnvL[1,2,4]*ψ[1][1,3,6]*Q[1][8,3,2,5]*ψ[1]'[4,5,7]*EnvR[6,8,7]
+    return ApproxReal(q)
+end
+
+function QuantUniv(
+    ψ::Vector,
+    Q::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}}
+    )
+    EnvL = LeftEnv(ψ,Q,1)
+    EnvR = RightEnv(ψ,Q,1)
+    q = @tensor EnvL[1,2,4]*ψ[1][1,3,6]*Q[1][3,2,5,8]*ψ[1]'[4,5,7]*EnvR[6,8,7]
     return ApproxReal(q)
 end
 
