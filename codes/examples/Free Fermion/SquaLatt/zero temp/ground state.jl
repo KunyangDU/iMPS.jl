@@ -1,5 +1,5 @@
-include("../../../src/iMPS.jl")
-include("../model.jl")
+include("../../../../src/iMPS.jl")
+include("../../model.jl")
 
 Lx = 6
 Ly = 1

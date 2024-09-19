@@ -288,6 +288,15 @@ function IdentityMPO(L::Int64,d::Int64)
     return MPO
 end
 
+function MonoTrace(Opr1::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}})
+    
+    EnvR = RightEnv(Opr1,1)
+    EnvL = LeftEnv(Opr1,1)
+
+    tr = @tensor EnvL[1]*Opr1[1][2,1,2,3]*EnvR[3]
+
+    return ApproxReal(tr[1])
+end
 
 function Trace(Opr1::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}})
     
@@ -329,4 +338,9 @@ function WeightSum(MPSs::Vector,weights::Vector,D_MPS::Int64)
     end
     
     return MPS
+end
+
+
+function centralize(data::Union{Vector,OrdinalRange,StepRangeLen})
+    return [(data[i] + data[i+1]) / 2 for i in 1:(length(data) - 1)]
 end

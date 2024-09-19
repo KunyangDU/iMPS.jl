@@ -35,4 +35,29 @@ function TheoOccupCurve(;t::Number = 1,a::Number = 1,n::Int64 = 500)
 end
 
 
+function HeatCapacity1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen};t=1,a=1)
+    L = size(Latt)
+    lsk = 1:L*(pi/(L+1))
+    ce = zeros(length(lsβ))
+    for (βi,β) in enumerate(lsβ),k in lsk
+        ϵk = SquaBand(k;t=-t,a=a)
+        ce[βi] += (β^2/2/L)*ϵk^2/(1+cosh(β*ϵk))
+    end
+
+    return ce
+end
+
+function FreeEnergy1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen};t=1,a=1)
+    L = size(Latt)
+    lsk = 1:L*(pi/(L+1))
+    f = zeros(length(lsβ))
+    for (βi,β) in enumerate(lsβ),k in lsk
+        ϵk = SquaBand(k;t=-t,a=a)
+        f[βi] += -(1/β/L)*log(1+exp(-β*ϵk))
+    end
+
+    return f
+end
+
+
 

@@ -189,7 +189,7 @@ function RightLsEnv(
     return lsEnvR
 end
 
-function RightLsEnv(ψ1::Vector,H::Vector,ψ2::Vector,site::Int64)
+function RightLsEnv(ψ1::Vector,H::Vector{AbstractTensorMap{ComplexSpace,2,2}},ψ2::Vector,site::Int64)
 
     LR = length(H) + 1 - site
     lsEnvR = Vector{AbstractTensorMap}(undef,LR)

@@ -10,6 +10,7 @@ include("Tools.jl")
 include("Obserables.jl")
 include("Variation.jl")
 include("SETTN.jl")
+include("tanTRG.jl")
 
 
 #= 

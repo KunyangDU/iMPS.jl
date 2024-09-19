@@ -1,6 +1,6 @@
 function sweepTanTRG2(ρ::Vector,H::Vector,
     lsβ::Vector,D_MPO::Int64,LanczosLevel::Int64;
-    TruncErr::Number=1e-3)
+    TruncErr::Number=D_MPO)
 
     L = length(H)
     
@@ -12,7 +12,6 @@ function sweepTanTRG2(ρ::Vector,H::Vector,
 
     totaltruncerror = 0
     for (βi,β) in enumerate(lsβ[2:end])
-        @show βi,β
         τ = β - lsβ[βi]
 
         start_time = time()

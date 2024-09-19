@@ -17,6 +17,7 @@ function SETTN(
             VariPlusMPO(ρ,temp,d,D_MPO)
         end
     end
+    ρ[1] = ρ[1]/norm(ρ[1])
 
     return ρ
 end

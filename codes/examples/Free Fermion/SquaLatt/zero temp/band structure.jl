@@ -1,6 +1,5 @@
-using TensorKit,JLD2,FiniteLattices,CairoMakie
-include("../model.jl")
-include("../../../src/iMPS.jl")
+include("../../../../src/iMPS.jl")
+include("../../model.jl")
 
 Lx = 8
 Ly = 4
