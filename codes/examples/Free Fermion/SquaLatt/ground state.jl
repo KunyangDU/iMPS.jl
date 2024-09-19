@@ -19,7 +19,7 @@ D_MPO = d*(2*maxd + 2)
 
 LanczosLevel = D_MPO*d
 Nsweep = 3
-for μ in lsμ
+for μ in [0.0]
     @show μ
     H = HamMPO(Latt;μ=μ)
     ψ = RandMPS(Lx*Ly;d=d)

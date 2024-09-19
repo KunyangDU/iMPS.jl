@@ -61,7 +61,8 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         Eg = 0
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
-            Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
+            #Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel,D_MPS)
+            Eg,Ev = groundEig(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
             ψ[i:i+1],temptruncerr = RightSVD(Ev,D_MPS)
             #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
@@ -71,7 +72,7 @@ function sweepDMRG2(ψ::Vector,H::Vector,
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
-            Eg,Ev = LocalEigen(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel)
+            Eg,Ev = LocalEigen(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel,D_MPS)
             ψ[i-1:i],temptruncerr = collect(LeftSVD(Ev,D_MPS))
             #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
@@ -90,18 +91,18 @@ end
 
 function LocalEigen(Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
-    LanczosLevel::Int64)
+    LanczosLevel::Int64,D_MPS::Int64)
 
     effH = EffHam(Hi,EnvL,EnvR)
-    return groundEig(effH,LanczosLevel)
+    return groundEig(effH,LanczosLevel,D_MPS)
 end
 
 function LocalEigen(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
-    LanczosLevel::Int64)
+    LanczosLevel::Int64,D_MPS::Int64)
 
     effH = EffHam(Hi,EnvL,EnvR)
-    return groundEig(effH,LanczosLevel)
+    return groundEig(effH,LanczosLevel,D_MPS)
 end
 
 
@@ -110,7 +111,7 @@ function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
     effH = EffHam(Hi,EnvL,EnvR)
-    Eg,Ev = groundEig(effH,LanczosLevel)
+    Eg,Ev = groundEig(effH,LanczosLevel,D_MPS)
     MPSs = RightMove(nextψ,Ev,D_MPS)
 
     return Eg, MPSs
@@ -123,7 +124,7 @@ function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
     LanczosLevel::Int64,D_MPS::Int64)
 
     effH = EffHam(Hi,EnvL,EnvR)
-    Eg,Ev = groundEig(effH,LanczosLevel)
+    Eg,Ev = groundEig(effH,LanczosLevel,D_MPS)
     MPSs = LeftMove(nextψ,Ev,D_MPS)
 
     return Eg, MPSs

@@ -107,6 +107,77 @@ function LocalMerge(
     return permute(tempMPS,(),(1,2,3,4))
 end
 
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localψ::AbstractTensorMap{ComplexSpace,0,4},
+    Opr1::AbstractTensorMap{ComplexSpace,2,2},
+    Opr2::AbstractTensorMap{ComplexSpace,2,2},
+    EnvR::AbstractTensorMap{ComplexSpace,1,2}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4] ≔ EnvL[1,2,-1]*localψ[1,3,5,6]*Opr1[4,3,2,-2]*Opr2[7,5,4,-3]*EnvR[6,7,-4]
+    return permute(tempMPS,(),(1,2,3,4))
+end
+
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    Opr1::AbstractTensorMap{ComplexSpace,1,3},
+    Opr2::AbstractTensorMap{ComplexSpace,2,2},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[1,2,-3]*localOpr[-1,-2,1,3,5,6]*Opr1[3,2,-4,4]*Opr2[5,4,-5,7]*EnvR[6,7,-6]
+    return permute(tempMPS,(1,2),(3,4,5,6))
+end
+
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    Opr1::AbstractTensorMap{ComplexSpace,2,2},
+    Opr2::AbstractTensorMap{ComplexSpace,1,3},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[6,7,-3]*Opr1[4,5,7,-4]*Opr2[3,4,-5,2]*localOpr[-1,-2,6,5,3,1]*EnvR[1,2,-6]
+    return permute(tempMPS,(1,2),(3,4,5,6))
+end
+
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localψ::AbstractTensorMap{ComplexSpace,0,3},
+    Opr::AbstractTensorMap{ComplexSpace,2,2},
+    EnvR::AbstractTensorMap{ComplexSpace,1,2}
+    )
+
+    @tensor tempMPS[-1,-2,-3] ≔ EnvL[1,2,-1]*localψ[1,3,4]*Opr[5,3,2,-2]*EnvR[4,5,-3]
+    return permute(tempMPS,(),(1,2,3))
+end
+
+function LocalMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localOpr::AbstractTensorMap{ComplexSpace,1,3},
+    Opr::AbstractTensorMap{ComplexSpace,1,3},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4] ≔ EnvL[1,2,-2]*localOpr[-1,1,3,4]*Opr[3,2,-3,5]*EnvR[4,5,-4]
+    return permute(tempMPS,(1,),(2,3,4))
+end
+
+function LocalContract(
+    Opr1::AbstractTensorMap{ComplexSpace,1,3},
+    Opr2::AbstractTensorMap{ComplexSpace,2,2})
+    @tensor tempOpr[-1,-2,-3,-4,-5,-6] ≔ Opr1[-2,-3,-4,1]*Opr2[-1,1,-5,-6]
+    return permute(tempOpr,(1,2),(3,4,5,6))
+end
+
+function LocalContract(
+    Opr1::AbstractTensorMap{ComplexSpace,2,2},
+    Opr2::AbstractTensorMap{ComplexSpace,1,3})
+    @tensor tempOpr[-1,-2,-3,-4,-5,-6] ≔ Opr1[1,-2,-3,-4]*Opr2[-1,1,-5,-6]
+    return permute(tempOpr,(1,2),(3,4,5,6))
+end
 
 function InnerProd(ψ₁::Vector,ψ₂::Vector)
     EnvL = InitialLeftEnv(;order=2)
@@ -243,14 +314,18 @@ function Trace(
 end
 
 
-function WeightSum(MPSs::Vector{AbstractTensorMap},weights::Vector,D_MPS::Int64)
-    d = dims(domain(MPSs[1]))[2]
-    L = length(MPSs[1])
+function WeightProd(MPS::Vector,weight::Number)
+    return (vcat([weight],ones(length(MPS)-1)) .* MPS)
+end
 
-    MPS = VariPlusMPS(vcat([weights[1]],ones(L-1)) .* MPSs[1], vcat([weights[2]],ones(L-1)) .* MPSs[2],d,D_MPS)
+function WeightSum(MPSs::Vector,weights::Vector,D_MPS::Int64)
+    d = dims(domain(MPSs[1][1]))
+
+
+    MPS = VariPlusMPS(WeightProd(MPSs[1],weights[1]), WeightProd(MPSs[2],weights[2]),d,D_MPS)
 
     for i in eachindex(MPSs)[3:end]
-        MPS = VariPlusMPS(MPS,vcat([weights[i]],ones(L-1)) .* MPSs[i],d,D_MPS)
+        MPS = VariPlusMPS(MPS,WeightProd(MPSs[i],weights[i]),d,D_MPS)
     end
     
     return MPS

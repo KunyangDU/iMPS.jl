@@ -5,10 +5,10 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/methods.jl")
 include("../model.jl")
 
-L = 21
+L = 11
 J = -1.0
 h = -0.5
-D_MPS = 2^3
+D_MPS = 2^5
 
 Mi = load("../codes/examples/Transverse Ising/data/tdvp/Impur_Mi_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["Mi"]
 lst = load("../codes/examples/Transverse Ising/data/tdvp/Impur_lst_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lst"]

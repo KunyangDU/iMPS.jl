@@ -34,10 +34,9 @@ function Lanczos(M::AbstractTensorMap,level::Int64)
     
 end
 
-function groundEig(M::AbstractTensorMap, level::Int64)
+function groundEig(M::AbstractTensorMap, level::Int64,D_MPS::Int64)
     T, Q = Lanczos(M, level)
     λ, v = eigen(T)
-    #Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q,v[:, x]))
     Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
     return Eg, Ev' / norm(Ev)
 end
@@ -82,3 +81,70 @@ function groundEig(A::AbstractMatrix, k::Int)
     return argmin(λ) |> x -> (λ[x], Q * v[:, x])
 end
 
+function Lanczos(Hi::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64;kwargs...)
+    Q = Vector{AbstractTensorMap}(undef, LanczosLevel)
+    α = zeros(LanczosLevel)
+    β = zeros(LanczosLevel-1)
+
+    q1 = get(kwargs,:q1,let 
+        Tensor(rand, ComplexF64, ⊗(codomain(EnvL)[1],let 
+            spaces = []
+            for h in Hi 
+                push!(spaces,domain(h)[2])
+            end
+            spaces
+            end...,codomain(EnvR)[1])) |> x -> x' / norm(x)
+    end)
+    Q[1] = q1
+
+
+    for j = 1:LanczosLevel
+        if j == 1
+            w = LocalMerge(EnvL,Q[j],Hi...,EnvR)
+        else
+            w = LocalMerge(EnvL,Q[j],Hi...,EnvR) - β[j-1] * Q[j-1]
+        end
+
+        α[j] = ApproxReal((w*Q[j]')[1])
+        w -= α[j] * Q[j]
+        
+        if j < LanczosLevel
+            β[j] = norm(w)
+            if β[j] ≈ 0
+                @error "flow interrupted"
+            else
+                Q[j+1] = w / β[j]
+            end
+        end
+    end
+    
+    T = diagm(0 => α) +diagm(-1 => β) + diagm(1 => β)
+    return T, Q
+    
+end
+
+function groundEig(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64)
+    T, Q = Lanczos(Hi,EnvL,EnvR,LanczosLevel)
+    λ, v = eigen(T)
+    Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
+    return Eg, Ev / norm(Ev)
+end
+
+function Evolve(
+    localψ::AbstractTensorMap,
+    Hi::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    τ::Number,
+    LanczosLevel::Int64)
+    τHi = Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}}(undef,length(Hi))
+    for (hi,h) in enumerate(Hi)
+        τHi[hi] = (-τ + 0im)^(1/length(Hi))*h
+    end
+    T, Q = Lanczos(τHi,EnvL,EnvR,LanczosLevel;q1 = localψ)
+    A = sum(norm(localψ) * exp(T)[:,1] .* Q)
+    return A |> x -> x/norm(x)
+end

@@ -9,7 +9,7 @@ function HamMPO(L::Int64;J::Number=1,h::Number=0,hz::Number = 1e-2)
     d = 2
     D = 3
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -45,7 +45,7 @@ function MagmomMPO(L::Int64)
     d = 2
     D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -83,7 +83,7 @@ function LocalMagmomMPO(L::Int64,site::Int64;h::Number=0,t::Number=0)
     d = 2
     D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -128,7 +128,7 @@ function FerroMPS(L::Int64,state::String)
         @error "state doesn't exist"
     end
 
-    MPS = Vector{AbstractTensorMap}(undef,L)
+    MPS = Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}}(undef,L)
 
     bond = ℂ^1
     phys = (ℂ^2)'
@@ -150,7 +150,7 @@ function ImpurMPS(L::Int64,site::Int64)
     Σ = [reshape([0 1],1,2,1) for _ in 1:L]
     Σ[site] = reshape([1 0],1,2,1)
 
-    MPS = Vector{AbstractTensorMap}(undef,L)
+    MPS = Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}}(undef,L)
 
     bond = ℂ^1
     phys = (ℂ^d)'

@@ -173,7 +173,7 @@ end
 #################### UNILATERAL ENVIRONMENT LIST ####################
 
 function RightLsEnv(
-    ψ::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}},
+    ψ::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
     H::Vector{AbstractTensorMap{ComplexSpace,2,2}},
     site::Int64
     )
