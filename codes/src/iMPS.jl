@@ -9,6 +9,7 @@ include("TDVP.jl")
 include("Tools.jl")
 include("Obserables.jl")
 include("Variation.jl")
+include("SETTN.jl")
 
 
 #= 
@@ -210,6 +211,14 @@ III.Environment
            ‾‾‾
     i.e. TensorMap{ [1] , (2) ⊗ (3) }
 
+    *canonicalized
+           ___
+    [1] ← |   |
+    [2] ← |   |
+    (3) → |   |
+           ‾‾‾
+    i.e. TensorMap{ [1] ⊗ [2], (3) }
+
            ___
     [1] ← |   |
     (2) → |   |
@@ -223,7 +232,6 @@ III.Environment
           |   | ← (3)
            ‾‾‾
     i.e. TensorMap{ [1] ⊗ [2], (3)  }
-
            ___
           |   | → [1]
           |   | ← (2)

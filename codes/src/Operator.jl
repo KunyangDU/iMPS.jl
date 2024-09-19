@@ -30,7 +30,7 @@ function EffHam(Hi::AbstractTensorMap{ComplexSpace,2,2},EnvL::AbstractTensorMap{
     return permute(effH,(1,2,3),(4,5,6))
 end
 
-function EffHam(Hi::Vector{AbstractTensorMap},EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,1,2})
+function EffHam(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,1,2})
     @tensor effH[-1,-2,-3,-4,-5,-6,-7,-8] ≔ EnvL[-1,2,-5]*Hi[1][1,-2,2,-6]*Hi[2][3,-3,1,-7]*EnvR[-4,3,-8]
     return permute(effH,(1,2,3,4),(5,6,7,8))
 end

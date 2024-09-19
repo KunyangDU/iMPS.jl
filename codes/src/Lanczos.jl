@@ -37,17 +37,17 @@ end
 function groundEig(M::AbstractTensorMap, level::Int64)
     T, Q = Lanczos(M, level)
     λ, v = eigen(T)
+    #Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q,v[:, x]))
     Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
     return Eg, Ev' / norm(Ev)
 end
 
-function Lanczos(A::AbstractMatrix, k::Int)
+function Lanczos(A::AbstractMatrix, k::Int; q1::Vector = rand(size(A, 1)))
     n = size(A, 1)
-    Q = zeros(n, k)
+    Q = zeros(ComplexF64, n, k)
     α = zeros(k)
     β = zeros(k-1)
     
-    q1 = rand(n)
     q1 /= norm(q1)
     Q[:, 1] = q1
     
@@ -58,7 +58,7 @@ function Lanczos(A::AbstractMatrix, k::Int)
             w = A * Q[:, j] - β[j-1] * Q[:, j-1]
         end
         
-        α[j] = dot(Q[:, j], w)
+        α[j] = ApproxReal(dot(Q[:, j], w))
         w -= α[j] * Q[:, j]
         
         if j < k

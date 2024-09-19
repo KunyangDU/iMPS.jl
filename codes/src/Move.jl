@@ -12,6 +12,14 @@ function Move(
     return Merge(Opri1,Opri2,Opris...)
 end
 
+function Move(
+    ψ1::Union{AbstractTensorMap{ComplexSpace, 0, 3},AbstractTensorMap{ComplexSpace, 1, 2}},
+    ψ2::Union{AbstractTensorMap{ComplexSpace, 0, 3},AbstractTensorMap{ComplexSpace, 1, 2}},
+    )
+    MPSs = mySVD(ψ1,ψ2)
+    return Merge(ψ1,ψ2,MPSs...)
+end
+
 function LeftMove(nextψ::AbstractTensorMap{ComplexSpace, 1, 2},thisψ::AbstractTensorMap{ComplexSpace, 0, 3},D_MPS::Int64)
     MPSs,truncerr = LeftSVD(thisψ,D_MPS)
     Σ,V = MPSs
@@ -79,6 +87,36 @@ function mySVD(Opri::AbstractTensorMap{ComplexSpace, 2, 4},
     end
 end
 
+
+function mySVD(
+    ψ1::AbstractTensorMap{ComplexSpace, 0, 3},
+    ψ2::AbstractTensorMap{ComplexSpace, 1, 2}
+    )
+    U,S,V = tsvd(ψ1,(3,),(1,2))
+    return [V,permute(U*S,(),(1,2))]
+end
+
+function mySVD(
+    ψ1::AbstractTensorMap{ComplexSpace, 1, 2},
+    ψ2::AbstractTensorMap{ComplexSpace, 0, 3}
+    )
+    U,S,V = tsvd(ψ2,(1,),(2,3))
+    return [permute(U*S,(),(1,2)),V]
+end
+
+function mySVD(ψi::AbstractTensorMap{ComplexSpace, 0, 4},
+    direction::String, D_MPS::Int64)
+    if direction == "right"
+        U,S,V,truncerr = tsvd(ψi,(3,4),(1,2);trunc = truncdim(D_MPS))
+        return [V,permute(U*S,(),(3,1,2))],truncerr
+    elseif direction == "left"
+        U,S,V,truncerr = tsvd(ψi,(1,2),(3,4);trunc = truncdim(D_MPS))
+        return [permute(U*S,(),(1,2,3)),V],truncerr
+    else
+        @error "direction does not exist!"
+    end
+end
+
 # MERGE
 
 function RightMerge(Σ::AbstractTensorMap{ComplexSpace, 0, 2},V::AbstractTensorMap{ComplexSpace, 1, 2},nextψ::AbstractTensorMap{ComplexSpace, 1, 2})
@@ -124,4 +162,24 @@ function Merge(
     return [permute(tempMPO,(1,),(2,3,4)),svdOpri2]
 end
 
+function Merge(
+    ψ1::AbstractTensorMap{ComplexSpace, 0, 3},
+    ψ2::AbstractTensorMap{ComplexSpace, 1, 2},
+    svdψ1::AbstractTensorMap{ComplexSpace, 1, 2},
+    svdψ2::AbstractTensorMap{ComplexSpace, 0, 2},
+    )
+    @tensor tempMPS[-1,-2,-3] ≔ svdψ2[1,-1]*ψ2[1,-2,-3]
 
+    return [svdψ1,permute(tempMPS,(),(1,2,3))]
+end
+
+function Merge(
+    ψ1::AbstractTensorMap{ComplexSpace, 1, 2},
+    ψ2::AbstractTensorMap{ComplexSpace, 0, 3},
+    svdψ1::AbstractTensorMap{ComplexSpace, 0, 2},
+    svdψ2::AbstractTensorMap{ComplexSpace, 1, 2},
+    )
+    @tensor tempMPS[-1,-2,-3] ≔ svdψ1[1,-3]*ψ1[1,-1,-2]
+
+    return [permute(tempMPS,(),(1,2,3)),svdψ2]
+end

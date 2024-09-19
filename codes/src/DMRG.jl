@@ -96,7 +96,7 @@ function LocalEigen(Hi::AbstractTensorMap,
     return groundEig(effH,LanczosLevel)
 end
 
-function LocalEigen(Hi::Vector{AbstractTensorMap},
+function LocalEigen(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
     LanczosLevel::Int64)
 
