@@ -12,7 +12,7 @@ function sweepTanTRG2(ρ::Vector,H::Vector,
 
     totaltruncerror = 0
     for (βi,β) in enumerate(lsβ[2:end])
-        τ = β - lsβ[βi]
+        τ = (β - lsβ[βi])/2
 
         start_time = time()
         println("evolution $(βi+1), β = $(β)J")

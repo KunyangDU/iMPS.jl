@@ -13,7 +13,7 @@ D_MPO = 2^6
 Latt = load("examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsβ = load("examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ_$(Lx)x$(Ly).jld2")["lsβ"]
 lsμ = load("examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_D_MPO=$(D_MPO).jld2")["lsμ"]
-for μ in lsμ
+for μ in [0.0]
 lsρ = load("examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsρ_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsρ"]
 H = canonicalize(HamMPO(Latt;t=t,μ=μ,d=d))
 N = canonicalize(NMPO(size(Latt)))

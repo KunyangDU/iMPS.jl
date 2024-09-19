@@ -19,7 +19,7 @@ Latt = YCSqua(Lx,Ly)
 
 lsβ = vcat((3/2) .^ (-20:1:-1), 1:1/3:10)
 β₀ = lsβ[1]
-for μ in lsμ
+for μ in [0.0]
 H = canonicalize(HamMPO(Latt;t=t,μ=μ,d=d))
 ρ = SETTN(H,β₀,5,D_MPO)
 
