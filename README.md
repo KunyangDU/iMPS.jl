@@ -14,7 +14,7 @@ Now this code contains:
 
 which has been benchmarked and demonstrates a relatively good performance.
 
-### Tutrorials
+### Examples
 
 This code is applied to many models in 1D and 2D finite lattice (square lattice mostly), including:
 
