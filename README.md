@@ -16,7 +16,7 @@ which has been benchmarked and demonstrates a relatively good performance.
 
 ### Examples
 
-This code is applied to many models in 1D and 2D finite lattice (square lattice mostly), including:
+This code has been applied to many models in 1D and 2D finite lattice (square lattice mostly), including:
 
 * Spin: Ising, Heisenberg and XY model.
 * Fermion: Free fermion and Hubbard model.
