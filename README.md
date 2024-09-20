@@ -27,7 +27,7 @@ The tutorial is to be added.
 
 Some algorithms in this code is developed by [ CQM2 group](https://www.cqm2itp.com/) which works on purification-based finite-temperature simulations. Relevant packages are listed as follows:
 
-* [FiniteMPS.jl](https://github.com/Qiaoyi-Li/FiniteMPS.jl.git)
+* [FiniteMPS.jl](https://github.com/Qiaoyi-Li/FiniteMPS.jl)
 
 ## TODO
 
@@ -39,5 +39,5 @@ Some algorithms in this code is developed by [ CQM2 group](https://www.cqm2itp.c
 
 The following packages has been used:
 
-* [TensorKit.jl](https://github.com/Jutho/TensorKit.jl.git) for basic tensor operations.
-* [MKL.jl](https://github.com/JuliaLinearAlgebra/MKL.jl.git) for nested multi-threaded BLAS.
+* [TensorKit.jl](https://github.com/Jutho/TensorKit.jl) for basic tensor operations.
+* [MKL.jl](https://github.com/JuliaLinearAlgebra/MKL.jl) for nested multi-threaded BLAS.
