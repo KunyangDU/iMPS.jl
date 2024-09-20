@@ -3,12 +3,12 @@ include("../../../src/iMPS.jl")
 include("../model.jl")
 
 
-Lx = 4
+Lx = 8
 Ly = 1
 Latt = YCSqua(Lx,Ly)
 @save "examples/Hubbard/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
 t = 1
-U = 0
+U = 8
 d = 4
 
 lsμ = (U/4 - 4):0.5:(3*U/4 + 4)
@@ -20,7 +20,7 @@ maxd = FindMaxDist(neighbor(Latt))
 D_MPO = 4*maxd + 2
 
 LanczosLevel = D_MPO*d
-Nsweep = 5
+Nsweep = 3
 
 for μ in lsμ
     @show μ

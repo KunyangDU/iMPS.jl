@@ -120,7 +120,7 @@ function LocalMPO(L::Int64,lsOpr::Vector)
     I = diagm(ones(d))
     I0 = zeros(d,d)
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'

@@ -81,7 +81,7 @@ function groundEig(A::AbstractMatrix, k::Int)
     return argmin(λ) |> x -> (λ[x], Q * v[:, x])
 end
 
-function Lanczos(Hi::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+function Lanczos(Hi::Vector,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
     LanczosLevel::Int64;kwargs...)
     Q = Vector{AbstractTensorMap}(undef, LanczosLevel)

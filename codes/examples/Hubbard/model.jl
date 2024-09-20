@@ -66,7 +66,7 @@ function HamMPO(Latt::AbstractLattice;
     end
     HM[end] = HM[end] .+ kron(mode[:,1:1],Uterm)
 
-    MPO = Vector{AbstractTensorMap}(undef,size(Latt))
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef,size(Latt))
     
     idt = ℂ^1
     phys = (ℂ^d)'

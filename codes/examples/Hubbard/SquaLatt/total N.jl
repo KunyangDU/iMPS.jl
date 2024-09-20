@@ -9,7 +9,7 @@ t = 1
 U = 8
 d = 4
 
-D_MPS = 2^6
+D_MPS = 20
 
 Latt = load("examples/Hubbard/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsμ = load("examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2")["lsμ"]

@@ -363,7 +363,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \begin{frame}
 	\frametitle{Results}
 	\begin{itemize}
-		\item Charge susceptibility.
+		\item Charge compressibility.
 		\begin{gather}
 			\chi = \frac{1}{N}\pdv{N}{\mu}
 		\end{gather}
@@ -381,7 +381,7 @@ height=9,scale=0.5,debug]{beamerposter}
 \begin{frame}
 	\frametitle{Results}
 	\begin{itemize}
-		\item $k$ dependent Charge susceptibility.
+		\item $k$ dependent Charge compressibility.
 		\begin{gather}
 			\chi_k = \frac{1}{N}\pdv{N_k}{\mu}
 		\end{gather}
@@ -441,6 +441,34 @@ height=9,scale=0.5,debug]{beamerposter}
 			\subfigcapskip=-5pt
 			\subfigure{\includegraphics[height=0.4\linewidth]{images/fist order_6x1_D=32_μ=1.0.pdf}}
 			\subfigure{\includegraphics[height=0.4\linewidth]{images/second order_6x1_D=32_μ=1.0.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:Hubbard Model on Square Lattice}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = t\sum_{\langle i,j \rangle}\left(c_i^\dagger c_j + c_j^\dagger c_i\right) + \frac{U}{2}\sum_{\langle i \rangle}n_{i,\sigma} n_{i,\hat{\sigma}}
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Charge compressibility.
+		\begin{gather}
+			\chi = \frac{1}{N}\pdv{N}{\mu}
+		\end{gather}
+		\item Simulation results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=20_8x1_U=0.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=20_8x1_U=8.pdf}}
 		\end{figure}
 	\end{itemize}
 \end{frame}
