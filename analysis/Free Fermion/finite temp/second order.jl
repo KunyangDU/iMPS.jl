@@ -2,21 +2,20 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings,FiniteLattices
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 8
+Lx = 6
 Ly = 1
 
 t = 1
-μ = 0.0
+μ = 1.0
 d = 2
 
-D_MPO = 2^6
+D_MPO = 2^5
 
 Latt = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
-lsβ1 = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ1_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ1"]
 lsβ2 = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ2_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ2"]
 ce = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/ce_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["ce"]
 
-width,height = 0.7 .* (500,200)
+width,height = 0.7 .* (600,450)
 
 fig = Figure()
 
@@ -35,7 +34,7 @@ width = width,height = height,
 scatterlines!(axce,1 ./ lsβ2,ce)
 
 theoβ = 10 .^ (range(log10.(extrema(lsβ2))...,200))
-theoce = HeatCapacity1(Latt,theoβ)
+theoce = HeatCapacity1(Latt,theoβ,μ)
 
 lines!(axce,1 ./ theoβ,theoce,color = :red)
 

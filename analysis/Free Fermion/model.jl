@@ -35,29 +35,55 @@ function TheoOccupCurve(;t::Number = 1,a::Number = 1,n::Int64 = 500)
 end
 
 
-function HeatCapacity1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen};t=1,a=1)
+function HeatCapacity1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen},μ::Number;t=1,a=1)
     L = size(Latt)
-    lsk = 1:L*(pi/(L+1))
+    lsk = (1:L)*(pi/(L+1))
     ce = zeros(length(lsβ))
     for (βi,β) in enumerate(lsβ),k in lsk
-        ϵk = SquaBand(k;t=-t,a=a)
-        ce[βi] += (β^2/2/L)*ϵk^2/(1+cosh(β*ϵk))
+        ϵk = SquaBand(k;t=t,a=a)
+        ce[βi] += (β^2/2/L)*(ϵk-μ)*ϵk/(1+cosh(β*(ϵk-μ)))
     end
 
     return ce
 end
 
-function FreeEnergy1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen};t=1,a=1)
+function FreeEnergy1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen},μ::Number;t=1,a=1)
     L = size(Latt)
-    lsk = 1:L*(pi/(L+1))
+    lsk = (1:L)*(pi/(L+1))
     f = zeros(length(lsβ))
     for (βi,β) in enumerate(lsβ),k in lsk
         ϵk = SquaBand(k;t=-t,a=a)
-        f[βi] += -(1/β/L)*log(1+exp(-β*ϵk))
+        f[βi] += -(1/β)*log(1+exp(-β*(ϵk))) / L
     end
 
-    return f
+    return f + ParticleNumber1(Latt,lsβ,μ)
 end
 
+function InternalEnergy1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen},μ::Number;t=1,a=1)
+    L = size(Latt)
+    lsk = (1:L)*(pi/(L+1))
+    u = zeros(length(lsβ))
+    for k in lsk
+        ϵk = SquaBand(k;t=-t,a=a)
+        for (βi,β) in enumerate(lsβ)
+            u[βi] += ϵk/(1+exp(β*(ϵk-μ))) / L
+        end
+    end
 
+    return u
+end
+
+function ParticleNumber1(Latt::AbstractLattice,lsβ::Union{Vector,StepRangeLen},μ::Number;t=1,a=1)
+    L = size(Latt)
+    lsk = (1:L)*(pi/(L+1))
+    n = zeros(length(lsβ))
+    for k in lsk
+        ϵk = SquaBand(k;t=t,a=a)
+        for (βi,β) in enumerate(lsβ)
+            n[βi] += 1/(1+exp(β*(ϵk-μ))) / L
+        end
+    end
+
+    return n
+end
 

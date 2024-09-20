@@ -148,7 +148,8 @@ function Evolve(
             τHi[hi] = h
         end
     end
-    T, Q = Lanczos(τHi,EnvL,EnvR,LanczosLevel;q1 = localψ)
+    T, Q = Lanczos(τHi,EnvL,EnvR,LanczosLevel;q1 = localψ / norm(localψ))
     A = sum(norm(localψ) * exp(T)[:,1] .* Q)
-    return A |> x -> x/norm(x)
+    return A
+    #return A |> x -> x*norm(localψ)
 end

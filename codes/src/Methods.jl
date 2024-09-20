@@ -305,7 +305,7 @@ function Trace(Opr1::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTe
 
     tr = @tensor EnvL[1,2]*Opr1[1][4,1,3,5]*Opr1[1]'[2,3,6,4]*EnvR[5,6]
 
-    return ApproxReal(tr[1])
+    return ApproxReal(tr[1] / norm(tr[1])) * norm(tr[1])
 end
 
 function Trace(
@@ -319,7 +319,7 @@ function Trace(
 
     tr = @tensor EnvL[1,2,4]*Opr1[1][6,1,3,7]*Opr2[1][3,2,5,8]*Opr1[1]'[4,5,9,6]*EnvR[7,8,9]
 
-    return ApproxReal(tr[1]) / Z
+    return ApproxReal(tr[1]/Z)
 end
 
 

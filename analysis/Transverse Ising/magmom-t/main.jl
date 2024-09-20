@@ -14,7 +14,7 @@ Mi = load("../codes/examples/Transverse Ising/data/tdvp/Impur_Mi_D=$(D_MPS)_L=$(
 lst = load("../codes/examples/Transverse Ising/data/tdvp/Impur_lst_D=$(D_MPS)_L=$(L)_J=$(J)_h=$(h).jld2")["lst"]
 
 width,height = 0.7 .* (600,200)
-
+centralize
 fig = Figure()
 ax = Axis(fig[1,1],
 xticks = 1:L,

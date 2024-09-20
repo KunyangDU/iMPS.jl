@@ -142,6 +142,23 @@ height=9,scale=0.5,debug]{beamerposter}
 	\end{itemize}
 \end{frame}
 
+\begin{frame}
+	\frametitle{SETTN}
+	Write $\rho$ in series expansion:
+	\begin{equation}
+		\rho  = \mathrm{e}^{-\beta H} = \sum_{k=0}^{+\infty} \frac{(-\beta H)^k}{k!}
+	\end{equation}
+	calculate the $\left\{ H^k \right\},k=0,1,2...$
+\end{frame}
+
+\begin{frame}
+	\frametitle{tanTRG}
+	Suppose $X_\rho\in T_\rho M$
+	\begin{equation}
+		\dv{\rho}{\beta} = \arg \min \abs{X_\rho + H\rho}
+	\end{equation}
+	i.e., project the $ H\rho$ onto the tangent space of $M$ at $\rho$
+\end{frame}
 
 \begin{frame}
 	\frametitle{Model:Transverse Ising Chain}
@@ -410,6 +427,48 @@ height=9,scale=0.5,debug]{beamerposter}
 			\subfigcapskip=-5pt
 			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=32_6x1.pdf}}
 			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_4x4.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Finite Temperature Results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/fist order_6x1_D=32_μ=1.0.pdf}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/second order_6x1_D=32_μ=1.0.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Benchmark}
+	\begin{itemize}
+		\item DMRG complexity:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/DMRG-memoryD.png}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/DMRG-timeD.png}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Benchmark}
+	\begin{itemize}
+		\item tanTRG + SETTN complexity:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/tanTRG-memoryD.png}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/tanTRG-timeD.png}}
 		\end{figure}
 	\end{itemize}
 \end{frame}
