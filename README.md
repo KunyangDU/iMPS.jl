@@ -25,7 +25,7 @@ The tutorial is to be added.
 
 ### Announcement
 
-Some algorithm of this code is invented by [ CQM2 group](https://www.cqm2itp.com/) which works on purification-based finite-temperature simulations. Relevant packages are listed as follows:
+Some algorithms in this code is invented by [ CQM2 group](https://www.cqm2itp.com/) which works on purification-based finite-temperature simulations. Relevant packages are listed as follows:
 
 * [FiniteMPS.jl](https://github.com/Qiaoyi-Li/FiniteMPS.jl.git)
 
