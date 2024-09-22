@@ -2,7 +2,7 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 8
+Lx = 6
 Ly = 1
 U = 8
 

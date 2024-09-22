@@ -1,17 +1,95 @@
-using TensorKit,JLD2,MKL,FiniteLattices
+#= using TensorKit,JLD2,MKL,FiniteLattices
+
+include("Environment.jl")
+include("Initialize.jl")
+include("PushLeft.jl")
+include("PushRight.jl")
+
+include("LocalOperator.jl")
+include("Node.jl")
+include("addIntr1.jl")
+include("addIntr2.jl")
+include("Automata.jl")
+include("Fermion.jl")
+include("Spin.jl")
+
+include("MPO.jl")
+include("canonicalize.jl")
+include("Operation.jl")
+include("MPS.jl")
+include("Hamiltonian.jl")
+
+include("CalculateObs.jl")
+include("methods.jl")
+
+include("Action.jl")
+include("Merge.jl")
+include("Move.jl")
+include("SVD.jl")
+include("Variation.jl")
+include("Algebra.jl")
+include("Geometry.jl")
+include("Show.jl")
+include("Tools.jl")
+
 include("DMRG.jl")
 include("Lanczos.jl")
-include("Methods.jl")
-include("Operator.jl")
-include("Environment.jl")
-include("Move.jl")
 include("TDVP.jl")
-include("Tools.jl")
-include("Obserables.jl")
-include("Variation.jl")
 include("SETTN.jl")
 include("tanTRG.jl")
+ =#
 
+module iMPS
+using TensorKit,MKL,FiniteLattices
+
+export PushLeft,PushRight
+include("Environment/Environment.jl")
+include("Environment/Initialize.jl")
+include("Environment/PushLeft.jl")
+include("Environment/PushRight.jl")
+
+export AbstractLocalOperator,IdentityOperator,LocalOperator
+export InteractionTreeNode,InteractionTree
+export addIntr1!,addIntr2!,AutomataMPO
+include("IntrTree/LocalOperator.jl")
+include("IntrTree/Node.jl")
+include("IntrTree/addIntr1.jl")
+include("IntrTree/addIntr2.jl")
+include("IntrTree/Automata.jl")
+
+export Spin2,Spin2Fermion,SpinlessFermion
+include("LocalSpace/Fermion.jl")
+include("LocalSpace/Spin.jl")
+
+export RandMPS
+include("MatProd/MPO/MPO.jl")
+include("MatProd/MPO/canonicalize.jl")
+include("MatProd/MPO/Operation.jl")
+include("MatProd/MPS/MPS.jl")
+include("MatProd/Hamiltonian.jl")
+
+export calObs
+include("Observables/CalculateObs.jl")
+include("Observables/methods.jl")
+
+export showQuantSweep,showBlockMPO,showdomain,FindMaxDist
+include("Operation/Action.jl")
+include("Operation/Merge.jl")
+include("Operation/Move.jl")
+include("Operation/SVD.jl")
+include("Operation/Variation.jl")
+include("Tools/Algebra.jl")
+include("Tools/Geometry.jl")
+include("Tools/Show.jl")
+include("Tools/Tools.jl")
+
+export sweepDMRG2
+include("Algorithm/DMRG.jl")
+include("Algorithm/Lanczos.jl")
+include("Algorithm/TDVP.jl")
+include("Algorithm/SETTN.jl")
+include("Algorithm/tanTRG.jl")
+end
 
 #= 
 MPO data matrix should be the hermitian conjugate of the 
