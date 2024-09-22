@@ -9,7 +9,7 @@ t = 1
 μ = 1.0
 d = 2
 
-D_MPO = 2^3
+D_MPO = 2^4
 
 Latt = load("../codes/examples/MANUAL/Free Fermion/data/finite temp/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
 lsβ1 = load("../codes/examples/MANUAL/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ1_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ1"]
