@@ -31,7 +31,8 @@ Some algorithms in this code is developed by [ CQM2 group](https://www.cqm2itp.c
 
 ## TODO
 
-* Non-abelian symmetries is to be added to accelerate the computation.
+* Finite automata is to be used.
+* Abelian symmetries is to be added to accelerate the computation.
 * Controlled bond expansion ([CBE](https://doi.org/10.1103/PhysRevLett.130.246402)) is to be implemented to reduce the complexity (of DMRG, TDVP, tanTRG, etc.).
 * The code structure is to be optimized to reach a higher performance.
 
