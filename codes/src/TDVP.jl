@@ -1,13 +1,23 @@
 
-#基本思路，计算每一时刻的MPS，在update处插入演化与反向演化
-#本质上来说不用求解本征值，直接对该点的MPS进行演化
+function MixTDVP(ψ::Vector,H::Vector,
+    t::Number,Nt::Int64,
+    D_MPS::Int64;prop::NTuple{2,Int64} = (1,5),TruncErr::Number = 1e-5)
 
-# 脚本拆分
-# 注意Apply的冗余和EffHam的广泛性，可以简化代码
+    N2, N1 = convert.(Int64,Nt .* prop ./ sum(prop))
+    t2, t1 = convert.(Float64,t .* prop ./ sum(prop))
+
+    lsψ2,lst2 = sweepTDVP2(ψ,H,t2,N2,D_MPS;TruncErr=TruncErr)
+    lsψ1,lst1 = sweepTDVP1(deepcopy(lsψ2[end]),H,t1,N1,D_MPS)
+    lsψ = vcat(lsψ2,lsψ1)
+    lst = vcat(lst2,lst2[end] .+ lst1)
+    return lsψ,lst
+end
 
 function sweepTDVP1(ψ::Vector,H::Vector,
     t::Number,Nt::Int64,
     D_MPS::Int64)
+
+    L = length(H)
     
     lsψ = Vector{Vector}(undef,Nt)
     lst = collect(range(0,t,Nt))
@@ -15,107 +25,275 @@ function sweepTDVP1(ψ::Vector,H::Vector,
 
     lsψ[1] = deepcopy(ψ)
 
-    #MiMPO = TensorMap([1 0;0 -1],(ℂ^2)'→ (ℂ^2)')
+    lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
+    totaltruncerror = 0
+    for iNt in 2:Nt
 
-
-    for i in 2:Nt
-        #lsMi = Quant1(ψ,MiMPO,D_MPS)
         start_time = time()
-        println("evolution $i begin, t = $(round(lst[i];digits=3))/J")
+        println("evolution $iNt, t = $(round(lst[iNt];digits=3))/J")
 
-        EnvR = RightEnv(ψ,H,1)
-        ψ[1:2] = RightUpdateTDVP1(ψ[1:2],H[1],EnvR,τ,D_MPS)
-        EnvL = LeftEnv(ψ[1],H[1])
+        println(">>>>>> begin >>>>>>")
+        for i in 1:L-1
+            if iNt != 1 && i == 1
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
+            else
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP1(ψ[i:i+1],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
+            end
+            lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
 
-        for iL in 2:length(H)-1
-            EnvR = RightEnv(ψ,H,iL)
-            ψ[iL:iL+1] = RightUpdateTDVP1(ψ[iL:iL+1],H[iL],EnvL,EnvR,τ,D_MPS)
-            EnvL = PushRight(EnvL,ψ[iL],H[iL])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
-        println("right sweep finished")
+        println(">>>>>> finished >>>>>>")
 
-        EnvL = LeftEnv(ψ,H,1)
-        ψ[end-1:end] = LeftUpdateTDVP1(ψ[end-1:end],H[end],EnvL,2*τ,D_MPS)
-        EnvR = RightEnv(ψ[end],H[end])
+        println("<<<<<< begin <<<<<<")
+        for i in L:-1:2
+            if i == L 
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],2*τ,D_MPS;τback = τ)
+            else
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP1(ψ[i-1:i],H[i],lsEnv[i],lsEnv[i+1],τ,D_MPS)
+            end
+            lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
 
-        for iL in length(H)-1:-1:2
-            EnvL = LeftEnv(ψ,H,iL)
-            ψ[iL-1:iL] = LeftUpdateTDVP1(ψ[iL-1:iL],H[iL],EnvL,EnvR,τ,D_MPS)
-            EnvR = PushLeft(EnvR,ψ[iL],H[iL])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
-        println("left sweep finished")
+        println("<<<<<< finished <<<<<<")
 
-        println("evolution $i finished, time consumed $(round(time()-start_time;digits=2))s")
+        println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
 
-        lsψ[i] = deepcopy(ψ)
+        lsψ[iNt] = deepcopy(ψ)
     end
 
     return lsψ,lst
 end
 
-#仿照DMRG，建立左右Move的函数
 
-function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
-    EnvR::AbstractTensorMap,τ::Number,
-    D_MPS::Int64)
+function sweepTDVP2(ψ::Vector,H::Vector,
+    t::Number,Nt::Int64,
+    D_MPS::Int64,LanczosLevel::Int64;TruncErr::Number=1e-5)
 
-    reduH1 = EffHam(Hi,EnvR)
-    Aτ = Apply(ψs[1],EvolveOpr(reduH1,τ))
+    L = length(H)
+    
+    lsψ = Vector{Vector}(undef,1)
+    lst = Vector{Float64}(undef,1)
+    τ = t/(Nt-1)/2
 
-    Στ,thisMPS = RightSVD(Aτ,D_MPS)
+    lsψ[1] = deepcopy(ψ)
+    lst[1] = 0.0
 
-    reduH0 = EffHam(LeftEnv(thisMPS,Hi),EnvR)
-    Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
+    lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
 
-    return collect(RightMerge(Σ,thisMPS,ψs[2]))
+    totaltruncerror = 0
+    for iNt in 2:Nt
+
+        start_time = time()
+        println("evolution $iNt, t = $(round(lst[iNt-1]+2*τ;digits=3))/J")
+
+        println(">>>>>> begin >>>>>>")
+        for i in 1:L-1
+            if iNt != 1 && i==1
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS,LanczosLevel;τback=τ)
+            else
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS,LanczosLevel)
+            end
+            lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println(">>>>>> finished >>>>>>")
+
+        println("<<<<<< begin <<<<<<")
+        for i in L:-1:2
+            if i == L
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS,LanczosLevel;τback=τ)
+            else
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS,LanczosLevel)
+            end
+            lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println("<<<<<< finished <<<<<<")
+
+        println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
+
+        totaltruncerror > TruncErr && break
+        push!(lsψ,deepcopy(ψ))
+        push!(lst,lst[end] + 2*τ)
+    end
+
+    return lsψ,lst
+end
+
+
+function GreenFuncTDVP2(ψ::Vector,H::Vector,τ::Number,
+    TruncErr::Number,MaxIter::Int64,D_MPS::Int64,LanczosLevel::Int64)
+    # why truncerr is always 0?
+    # calculate the ⟨ψ| exp(-iHt) |ψ⟩
+
+    L = length(H)
+    
+    lsGt = Vector{ComplexF64}(undef,1)
+    lsGt[1] = InnerProd(ψ,ψ) / 2
+    lst = Vector{Float64}(undef,1)
+    lst[1] = 0.0
+
+    
+    ψ₀ = deepcopy(ψ)
+
+    lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
+
+    
+    totaltruncerror = 0
+    for iter in 1:MaxIter
+
+        start_time = time()
+        println("evolution $iter")
+
+        println(">>>>>> begin >>>>>>")
+        for i in 1:L-1
+            if iter != 1 && i==1
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ/2,D_MPS,LanczosLevel;τback=τ/2)
+            else
+                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ/2,D_MPS,LanczosLevel)
+            end
+            lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println(">>>>>> finished >>>>>>")
+
+        println("<<<<<< begin <<<<<<")
+        for i in L:-1:2
+            if i == L
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ/2,D_MPS,LanczosLevel;τback=τ/2)
+            else
+                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ/2,D_MPS,LanczosLevel)
+            end
+            lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println("<<<<<< finished <<<<<<")
+
+        println("evolution $iter finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")
+        totaltruncerror > TruncErr && break
+        push!(lsGt,InnerProd(ψ₀,ψ))
+        push!(lst,lst[end] + τ)
+        # without a -iexp(...)
+    end
+
+    return lsGt,lst
 end
 
 function RightUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
-    D_MPS::Int64)
+    D_MPS::Int64;τback::Number = τ)
 
-    reduH1 = EffHam(Hi,EnvL,EnvR)
-    Aτ = Apply(ψs[1],EvolveOpr(reduH1,τ))
+    effH = EffHam(Hi,EnvL,EnvR)
+    Aτ = Apply(ψs[1],EvolveOpr(effH,τ))
 
-    Στ,thisMPS = RightSVD(Aτ,D_MPS)
+    MPSs,truncerr = RightSVD(Aτ,D_MPS)
+    thisMPS,Στ = MPSs
 
-    reduH0 = EffHam(PushRight(EnvL,thisMPS,Hi),EnvR)
-    Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
+    effH0 = EffHam(PushRight(EnvL,thisMPS,Hi),EnvR)
+    Σ = Apply(Στ,EvolveOpr(effH0,-τback))
 
-    return collect(RightMerge(Σ,thisMPS,ψs[2]))
+    return RightMerge(Σ,thisMPS,ψs[2]),truncerr
 end
 
-
-function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
-    EnvL::AbstractTensorMap,τ::Number,
-    D_MPS::Int64)
-
-    reduH1 = EffHam(Hi,EnvL)
-    Aτ = Apply(ψs[2],EvolveOpr(reduH1,τ))
-
-    Στ,thisMPS = LeftSVD(Aτ,D_MPS)
-
-    reduH0 = EffHam(EnvL,RightEnv(thisMPS,Hi))
-    Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
-
-    MPSs = collect(LeftMerge(Σ,thisMPS,ψs[1]))
-
-    return MPSs
-end
 
 function LeftUpdateTDVP1(ψs::Vector,Hi::AbstractTensorMap,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
-    D_MPS::Int64)
+    D_MPS::Int64;τback::Number = τ)
 
-    reduH1 = EffHam(Hi,EnvL,EnvR)
-    Aτ = LeftApply(ψs[2],EvolveOpr(reduH1,τ))
-    Aτ = permute(Aτ,(),(2,3,1))
-    Στ,thisMPS = LeftSVD(Aτ,D_MPS)
+    effH = EffHam(Hi,EnvL,EnvR)
+    Aτ = Apply(ψs[2],EvolveOpr(effH,τ))
 
-    reduH0 = EffHam(EnvL,PushLeft(EnvR,thisMPS,Hi))
-    Σ = Apply(Στ,EvolveOpr(reduH0,-τ))
+    MPSs,truncerr = LeftSVD(Aτ,D_MPS)
+    Στ,thisMPS = MPSs
 
-    return collect(LeftMerge(Σ,thisMPS,ψs[1]))
+    effH0 = EffHam(EnvL,PushLeft(EnvR,thisMPS,Hi))
+    Σ = Apply(Στ,EvolveOpr(effH0,-τback))
+
+    return LeftMerge(Σ,thisMPS,ψs[1]),truncerr
 end
 
+
+function RightUpdateTDVP2(ψs::Vector,Hi::Vector,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
+    D_MPS::Int64,LanczosLevel::Int64;
+    τback::Number = τ)
+
+    ψm = LocalMerge(ψs...)
+    effH = EffHam(Hi,EnvL,EnvR)
+    Aτ = Apply(ψm,EvolveOpr(effH,τ))
+
+    #Aτ = Evolve(ψm,Hi,EnvL,EnvR,τ,LanczosLevel)
+    MPSs,truncerr = mySVD(Aτ,"right",D_MPS)
+    thisMPS,Στ = MPSs 
+
+    effH1 = EffHam(Hi[2],PushRight(EnvL,thisMPS,Hi[1]),EnvR)
+    Σ = Apply(Στ,EvolveOpr(effH1,-τback))
+    #Σ = Evolve(Στ,Hi[2:2],PushRight(EnvL,thisMPS,Hi[1]),EnvR,-τback,LanczosLevel)
+
+    return [thisMPS,Σ],truncerr
+end
+
+function LeftUpdateTDVP2(ψs::Vector,Hi::Vector,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number,
+    D_MPS::Int64,LanczosLevel::Int64;
+    τback::Number = τ)
+
+    ψm = LocalMerge(ψs...)
+    effH = EffHam(Hi,EnvL,EnvR)
+    Aτ = Apply(ψm,EvolveOpr(effH,τ))
+    #Aτ = Evolve(ψm,Hi,EnvL,EnvR,τ,LanczosLevel)
+
+    MPSs,truncerr = LeftSVD(Aτ,D_MPS)
+    Στ,thisMPS = MPSs
+    effH1 = EffHam(Hi[1],EnvL,PushLeft(EnvR,thisMPS,Hi[2]))
+    Σ = Apply(Στ,EvolveOpr(effH1,-τback))
+    #Σ = Evolve(Στ,Hi[1:1],EnvL,PushLeft(EnvR,thisMPS,Hi[2]),-τback,LanczosLevel)
+
+    return [Σ,thisMPS],truncerr
+end
+
+
+
+#= function LocalEvolve(ψi::AbstractTensorMap,Hi::AbstractTensorMap,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number)
+    effH = EffHam(Hi,EnvL,EnvR)
+    return Apply(ψi,EvolveOpr(effH,τ))
+end
+
+function LocalEvolve(ψi::Vector{AbstractTensorMap},
+    Hi::Vector{AbstractTensorMap},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,τ::Number)
+    
+    ψm = LocalMerge(ψi...)
+    effH = EffHam(Hi,EnvL,EnvR)
+
+    return Apply(ψm,EvolveOpr(effH,τ))
+end
+
+function RightMove(nextψ::AbstractTensor,thisψ::AbstractTensor,
+    Hi::AbstractTensorMap,EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    τ::Number,D_MPS::Int64)
+
+    Στ,thisMPS = RightSVD(thisψ,D_MPS)
+
+    effH = EffHam(PushRight(EnvL,thisMPS,Hi),EnvR)
+    Σ = Apply(Στ,EvolveOpr(effH,-τ))
+
+    return collect(RightMerge(Σ,thisMPS,nextψ))
+end
+
+function LeftMove(nextψ::AbstractTensor,thisψ::AbstractTensor,
+    Hi::AbstractTensorMap,EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    τ::Number,D_MPS::Int64)
+
+    Στ,thisMPS = LeftSVD(thisψ,D_MPS)
+
+    effH = EffHam(EnvL,PushLeft(EnvR,thisMPS,Hi))
+    Σ = Apply(Στ,EvolveOpr(effH,-τ))
+
+    return collect(LeftMerge(Σ,thisMPS,nextψ))
+end =#
 

@@ -1,5 +1,5 @@
 
-function IsingHam(L::Int64;J::Number=1,h::Number=0,hz::Number = 1e-2)
+function HamMPO(L::Int64;J::Number=1,h::Number=0,hz::Number = 1e-2)
 
     I = diagm(ones(2))
     I0 = zeros(2,2)
@@ -9,194 +9,160 @@ function IsingHam(L::Int64;J::Number=1,h::Number=0,hz::Number = 1e-2)
     d = 2
     D = 3
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
-    phys = ℂ^d
+    idt = ℂ^1
+    phys = (ℂ^d)'
     bond = ℂ^D
     for i in 1:L
         if i == 1
-            #M = TensorMap(vcat(map(x -> x[:],(h*σx,J*σz,I))...), phys' → phys'  ⊗ bond)
-            M = TensorMap(vcat(map(x -> x[:],(h*σx+hz*σz,J*σz,I))...), bond' → phys' ⊗ phys)
-            M = permute(M,(1,3),(2,))
+            data = reshape([h*σx+hz*σz J*σz I],d,D,d,1)
+            M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
-            #M = TensorMap(vcat(map(x -> x[:],(I,σz,σx))...), phys' ⊗ bond → phys' )
-            M = TensorMap(vcat(map(x -> x[:],(I,σz,h*σx+hz*σz))...), bond → phys ⊗ phys' )
-            M = permute(M,(2,),(1,3))
+            data = reshape([I;σz;h*σx+hz*σz],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
         else
-            Hi = [
+            data = reshape([
                 I I0 I0
                 σz I0 I0
                 h*σx+hz*σz J*σz I
-            ]
-            reshape(Hi[:],D,d,D,d)
-            M = TensorMap(Hi,phys' ⊗ bond'→ phys' ⊗ bond' )
-            M = permute(M,(1,4),(3,2))
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
         end
         MPO[i] = M
-        println("MPO finished $i/$L")
     end
-    println("MPO totally finished")
+    println("MPO constructed")
 
     return MPO
 end
 
-function IsingMagmom(L::Int64)
-    
+function MagmomMPO(L::Int64)
+
     I = diagm(ones(2))
     I0 = zeros(2,2)
     σz = [1 0;0 -1]
 
     d = 2
-    D_MPO = 2
+    D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
-    phys = ℂ^d
-    bond = ℂ^D_MPO
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
     for i in 1:L
         if i == 1
-            #M = TensorMap(vcat(map(x -> x[:],(σz,I))...), phys' → phys'  ⊗ bond) final format
-            M = TensorMap(vcat(map(x -> x[:],(σz,I))...), bond' → phys'  ⊗ phys)
-            M = permute(M,(1,3),(2,))
+            data = reshape([σz I],d,1,d,D)
+            M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
-            #M = TensorMap(vcat(map(x -> x[:],(I,σz))...), phys' ⊗ bond → phys' ) final format
-            M = TensorMap(vcat(map(x -> x[:],(I,σz))...), bond → phys ⊗ phys' )
-            M = permute(M,(2,),(1,3))
+            data = reshape([I;σz],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
         else
-            Hi = [
+            data = reshape([
                 I I0
                 σz I
-            ]
-            reshape(Hi[:],D_MPO,d,D_MPO,d)
-            M = TensorMap(Hi,phys' ⊗ bond'→ phys' ⊗ bond' )
-            M = permute(M,(1,4),(3,2))
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
         end
         MPO[i] = M
-        println("MPO finished $i/$L")
     end
-    println("MPO totally finished")
+    println("MPO constructed")
 
     return MPO
-
 end
 
+function LocalMagmomMPO(L::Int64,site::Int64;h::Number=0,t::Number=0)
 
-function IsingLocalMagmom(L::Int64,site::Int64;h::Number=0,t::Number=0)
-    
     I = diagm(ones(2))
     I0 = zeros(2,2)
     σx = [0 1;1 0]
     σz = [1 0;0 -1]
-    Σ = [I for _ in 1:L]
+    Σ = [I0 for _ in 1:L]
     Σ[site] = exp(-1im*h*σx*t)'*σz*exp(-1im*h*σx*t)
 
     d = 2
-    D_MPO = 2
+    D = 2
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
-    phys = ℂ^d
-    bond = ℂ^D_MPO
+    idt = ℂ^1
+    phys = (ℂ^d)'
+    bond = ℂ^D
     for i in 1:L
         if i == 1
-            #M = TensorMap(vcat(map(x -> x[:],(σz,I))...), phys' → phys'  ⊗ bond) final format
-            M = TensorMap(vcat(map(x -> x[:],(Σ[i],I))...), bond' → phys'  ⊗ phys)
-            M = permute(M,(1,3),(2,))
+            data = reshape([Σ[i] I],d,1,d,D)
+            M = BlockMPO(data,phys,idt,phys,bond)
         elseif i == L
-            #M = TensorMap(vcat(map(x -> x[:],(I,σz))...), phys' ⊗ bond → phys' ) final format
-            M = TensorMap(vcat(map(x -> x[:],(I,Σ[i]))...), bond → phys ⊗ phys' )
-            M = permute(M,(2,),(1,3))
+            data = reshape([I;Σ[i]],d,D,d,1)
+            M = BlockMPO(data,phys,bond,phys,idt)
         else
-            Hi = [
+            data = reshape([
                 I I0
                 Σ[i] I
-            ]
-            reshape(Hi[:],D_MPO,d,D_MPO,d)
-            M = TensorMap(Hi,phys' ⊗ bond'→ phys' ⊗ bond' )
-            M = permute(M,(1,4),(3,2))
+            ],d,D,d,D)
+            M = BlockMPO(data,phys,bond,phys,bond)
         end
         MPO[i] = M
-        println("MPO finished $i/$L")
     end
-    println("MPO totally finished")
+    println("MPO constructed")
 
     return MPO
-
 end
 
+function LocalMagmomMPO(d::Int64=2,data::Array=[1 0;0 -1])
+    return Opr1(d,data)
+end
 
-
-function IsingMPS(L::Int64,state::String,D_MPS::Int64;noise::Number=0)
-
-    initialState = zeros(ComplexF64,[d for _ in 1:L]...)
+function FerroMPS(L::Int64,state::String)
+    # suppose center at leftmost
 
     if state == "FM"
-        initialState[[1 for _ in 1:L]...] = 1im
+        Σ = [reshape([1 0],1,2,1) for _ in 1:L]
     elseif state == "AFM"
-        initialState[repeat([1, 2], div(L,2))...] = 1im
+        if iseven(L)
+            Σ = repeat([reshape([1 0],1,2,1), reshape([0 1],1,2,1)], div(L,2))
+        else
+            Σ = vcat([reshape([1 0],1,2,1)],repeat([reshape([0 1],1,2,1), reshape([1 0],1,2,1)], div(L,2)))
+        end
     else
-        @error "state not defined"
+        @error "state doesn't exist"
     end
 
-    initialState += noise .* rand(ComplexF64,[d for _ in 1:L]...)
+    MPS = Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}}(undef,L)
 
-    MPS = let 
-        iniMPS = Tensor(initialState, ⊗([ℂ^d for i in 1:L]...)) |> x -> x / norm(x)
-        MPS = Vector{AbstractTensorMap}(undef, L)
-        for ii in L:-1:2
-            if ii == L
-                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:L))...;trunc = truncdim(D_MPS))
-                MPS[ii] = V
-            else
-                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:ii+1))...;trunc = truncdim(D_MPS))
-                MPS[ii] = V
-            end
-            iniMPS = U*S |> x -> x / norm(x)
-            println("MPS initialized $(L-ii+1)/$L")
+    bond = ℂ^1
+    phys = (ℂ^2)'
+
+    MPS[1] = Tensor(Σ[1],bond' ⊗ phys' ⊗ bond') |> x -> permute(x,(),(1,2,3)) / norm(x)
+    
+    for i in 2:L
+        MPS[i] = let
+            TensorMap(Σ[i],bond,phys ⊗ bond) |> x -> x / norm(x)
         end
-        MPS[1] = permute(iniMPS,(),(1,2))
-        println("MPS initialized $L/$L")
-        println("MPS totally initialized")
-        MPS
     end
-
+    
     return MPS
 end
 
+function ImpurMPS(L::Int64,site::Int64)
+    # suppose center at leftmost
 
+    Σ = [reshape([0 1],1,2,1) for _ in 1:L]
+    Σ[site] = reshape([1 0],1,2,1)
 
-function IsingLocalMPS(L::Int64,state::Int64,D_MPS::Int64;noise::Number=0)
+    MPS = Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}}(undef,L)
 
-    initialState = zeros(ComplexF64,[d for _ in 1:L]...)
+    bond = ℂ^1
+    phys = (ℂ^d)'
 
-    index = 2*ones(Int64, L)
-    index[state] = 1
-
-    initialState[index...] = 1im
-
-    initialState += noise .* rand(ComplexF64,[d for _ in 1:L]...)
-
-    MPS = let 
-        iniMPS = Tensor(initialState, ⊗([ℂ^d for i in 1:L]...)) |> x -> x / norm(x)
-        MPS = Vector{AbstractTensorMap}(undef, L)
-        for ii in L:-1:2
-            if ii == L
-                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:L))...;trunc = truncdim(D_MPS))
-                MPS[ii] = V
-            else
-                U,S,V = tsvd(iniMPS,Tuple.((1:ii-1,ii:ii+1))...;trunc = truncdim(D_MPS))
-                MPS[ii] = V
-            end
-            iniMPS = U*S |> x -> x / norm(x)
-            println("MPS initialized $(L-ii+1)/$L")
+    MPS[1] = Tensor(Σ[1],bond' ⊗ phys' ⊗ bond') |> x -> permute(x,(),(1,2,3)) / norm(x)
+    
+    for i in 2:L
+        MPS[i] = let
+            TensorMap(Σ[i],bond,phys ⊗ bond) |> x -> x / norm(x)
         end
-        MPS[1] = permute(iniMPS,(),(1,2)) |> x -> x / norm(x)
-        println("MPS initialized $L/$L")
-        println("MPS totally initialized")
-        MPS
     end
-
+    
     return MPS
 end
-
 

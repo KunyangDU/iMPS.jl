@@ -40,16 +40,143 @@ height=9,scale=0.5,debug]{beamerposter}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Model}
+	\frametitle{DMRG: 1-site update}
+	\begin{multicols*}{2}
 	\begin{itemize}
-		\item \textbf{Hamiltonian:} Transverse Ising Model
+		\item Initialize MPS with diagonalization center at $i=1$.
+		\begin{figure}[H]
+			\includegraphics[width=1. \linewidth]{images/Initialization.pdf}
+		\end{figure}
+		\newpage
+		\item Sweep at two direction (right - left - right - \dots)
+		\begin{itemize}
+			\item Calculate the left/right environment $H_L/H_R$.
+			\begin{figure}[H]
+				\includegraphics[width=1. \linewidth]{images/LRenv1.pdf}
+			\end{figure}
+		\end{itemize}
+	\end{itemize}
+	\end{multicols*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DMRG: 1-site update}
+	\begin{itemize}
+		\item Sweep at two direction (right - left - right - \dots)
+		\begin{itemize}
+			\item Calculate the effective Hamiltonian $H_{eff} = H_L H_i H_R$
+			\begin{figure}[H]
+				\includegraphics[width=0.3 \linewidth]{images/effH1.pdf}
+			\end{figure}
+			\item OrientSVD and move the center to next site.
+			\begin{figure}[H]
+				\includegraphics[width=0.6 \linewidth]{images/orientSVD.pdf}
+			\end{figure}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{TDVP: 1-site integration}
+	\begin{itemize}
+		\item Initialize MPS with diagonalization center at $i=1$.
+		\newpage
+		\item Sweep at two direction (right - left - right - \dots)
+		\begin{itemize}
+			\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
+			\begin{figure}[H]
+				\includegraphics[width=0.8 \linewidth]{images/LRenv1 t.pdf}
+			\end{figure}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{TDVP: 1-site integration}
+	\begin{itemize}
+		\item Sweep at two direction (right - left - right - \dots)
+		\begin{itemize}
+			\item Calculate the effective Hamiltonian $H_{eff}^{(1)}$
+			\item Time evolution $A_i(t+\Delta t/2) = \exp(-iH_{eff}^{(1)}\Delta t / 2)A_i(t)$ 
+			\item OrientSVD and calculate the center with inverse evolution $C_i(t) = \exp(iH_{eff}^{(0)}\Delta t /2) C_i(t+\Delta t/2)$, then absorb it into nextsite.
+			\setcounter{subfigure}{0}
+			\begin{figure}[H]
+				\centering
+				\subfigbottomskip=2pt
+				\subfigcapskip=-5pt
+				\subfigure{\includegraphics[height=0.2\linewidth]{images/effH1 t.pdf}}
+				\subfigure{\includegraphics[height=0.21\linewidth]{images/effH0 t.pdf}}
+			\end{figure}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{TDVP: 2-site integration}
+	Sweep schemes
+	\begin{itemize}
+		\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
+		\begin{figure}[H]
+			\includegraphics[width=0.8 \linewidth]{images/LRenv2 t.pdf}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{TDVP: 2-site integration}
+	Sweep schemes
+	\begin{itemize}
+		\item Calculate the effective Hamiltonian $H_{eff}^{(2)}$
+		\item Time evolution $A_iA_{i+1}(t+\Delta t/2) = \exp(-iH_{eff}^{(2)}\Delta t / 2)A_iA_{i+1}(t)$ 
+		\item OrientSVD and calculate the center with inverse evolution $A_{i+1}(t) = \exp(iH_{eff}^{(1)}\Delta t /2) A_{i+1}(t+\Delta t/2)$, then regard it as nextsite.
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH2 t.pdf}}
+			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH1 t.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{SETTN}
+	Write $\rho$ in series expansion:
+	\begin{equation}
+		\rho  = \mathrm{e}^{-\beta H} = \sum_{k=0}^{+\infty} \frac{(-\beta H)^k}{k!}
+	\end{equation}
+	calculate the $\left\{ H^k \right\},k=0,1,2...$
+\end{frame}
+
+\begin{frame}
+	\frametitle{tanTRG}
+	Suppose $X_\rho\in T_\rho M$
+	\begin{equation}
+		\dv{\rho}{\beta} = \arg \min \abs{X_\rho + H\rho}
+	\end{equation}
+	i.e., project the $ H\rho$ onto the tangent space of $M$ at $\rho$
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:Transverse Ising Chain}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
 		\begin{equation}
 			H = -J\sum_{i=1}^{N-1}\sigma_i^z \sigma_{i+1}^z -h\sum_i^N\sigma_{i=1}^x + h_z\sum_{i=1}^N\sigma_i^z
 		\end{equation}
-		\item \textbf{Parameters} Physics parameters:
-		\begin{equation}
-			J = \pm 1.0,\quad h = 0.5,\quad N = 12
-		\end{equation}
+		we always choose $J = \pm 1.0$.
+		\item \textbf{Exact Solutions:} With \textbf{Jordan-Wigne} and \textbf{Bogoliubov} transformation, we can diagonalize $H$ in fermion picture:
+		\begin{gather}
+			H = \sum_{k>0}\lambda(k)\gamma_k^\dagger \gamma_k,\quad \lambda(k) = \sqrt{\epsilon_k^2 + \Delta_k^2},\quad \begin{pmatrix}
+				\gamma_k^\dagger\\\gamma_{-k}
+				\end{pmatrix} = \vb{P}(k) \begin{pmatrix}
+					c_k^\dagger\\c_{-k}
+					\end{pmatrix}\\
+			\epsilon_k = -2J\cos ka-2h,\quad \Delta_k = 2J\sin ka
+		\end{gather}
 	\end{itemize}
 \end{frame}
 
@@ -137,59 +264,6 @@ height=9,scale=0.5,debug]{beamerposter}
 \end{frame}
 
 \begin{frame}
-	\frametitle{DMRG: 1-site update}
-	\begin{multicols*}{2}
-	\begin{itemize}
-		\item Initialize MPS with diagonalization center at $i=1$.
-		\begin{figure}[H]
-			\includegraphics[width=1. \linewidth]{images/Initialization.pdf}
-		\end{figure}
-		\newpage
-		\item Sweep at two direction (right - left - right - \dots)
-		\begin{itemize}
-			\item Calculate the left/right environment $H_L/H_R$.
-			\begin{figure}[H]
-				\includegraphics[width=1. \linewidth]{images/LRenv1.pdf}
-			\end{figure}
-		\end{itemize}
-	\end{itemize}
-	\end{multicols*}
-\end{frame}
-
-\begin{frame}
-	\frametitle{DMRG: 1-site update}
-	\begin{itemize}
-		\item Sweep at two direction (right - left - right - \dots)
-		\begin{itemize}
-			\item Calculate the effective Hamiltonian $H_{eff} = H_L H_i H_R$
-			\begin{figure}[H]
-				\includegraphics[width=0.3 \linewidth]{images/effH1.pdf}
-			\end{figure}
-			\item OrientSVD and move the center to next site.
-			\begin{figure}[H]
-				\includegraphics[width=0.6 \linewidth]{images/orientSVD.pdf}
-			\end{figure}
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-
-\begin{frame}
-	\frametitle{TDVP: 1-site integration}
-	\begin{itemize}
-		\item Initialize MPS with diagonalization center at $i=1$.
-		\newpage
-		\item Sweep at two direction (right - left - right - \dots)
-		\begin{itemize}
-			\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
-			\begin{figure}[H]
-				\includegraphics[width=0.8 \linewidth]{images/LRenv1 t.pdf}
-			\end{figure}
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
 	\frametitle{Results}
 	\setcounter{subfigure}{0}
 	Simulation results:
@@ -197,56 +271,109 @@ height=9,scale=0.5,debug]{beamerposter}
 		\centering
 		\subfigbottomskip=2pt
 		\subfigcapskip=-5pt
-		\subfigure{\includegraphics[height=0.31\linewidth]{images/D=16_L=12_J=-1.0.pdf}}
-		\subfigure{\includegraphics[height=0.31\linewidth]{images/D=16_L=12_J=1.0.pdf}}
+		\subfigure{\includegraphics[height=0.29\linewidth]{images/D=32_L=12_J=-1.0.pdf}}
+		\subfigure{\includegraphics[height=0.29\linewidth]{images/D=32_L=12_J=1.0.pdf}}
 	\end{figure}
-	a quantum phase transition can be observed near $h\sim 1.0$
+	Where exact solution can be obtained by calculating $\expval{\sigma^z_i \sigma^z_j}$ and let $\abs{i-j}\to +\infty$, i.e.
+	\begin{equation}
+		\expval{\sigma^z} = \left[1-\left(\frac{h}{J}\right)^2\right]^{1/8}
+	\end{equation}
 \end{frame}
 
 \begin{frame}
-	\frametitle{TDVP: 1-site integration}
+	\frametitle{Results: Dynamics}
 	\begin{itemize}
-		\item Sweep at two direction (right - left - right - \dots)
-		\begin{itemize}
-			\item Calculate the effective Hamiltonian $H_{eff}^{(1)}$
-			\item Time evolution $A_i(t+\Delta t/2) = \exp(-iH_{eff}^{(1)}\Delta t / 2)A_i(t)$ 
-			\item OrientSVD and calculate the center with inverse evolution $C_i(t) = \exp(iH_{eff}^{(0)}\Delta t /2) C_i(t+\Delta t/2)$, then absorb it into nextsite.
-			\setcounter{subfigure}{0}
-			\begin{figure}[H]
-				\centering
-				\subfigbottomskip=2pt
-				\subfigcapskip=-5pt
-				\subfigure{\includegraphics[height=0.2\linewidth]{images/effH1 t.pdf}}
-				\subfigure{\includegraphics[height=0.21\linewidth]{images/effH0 t.pdf}}
-			\end{figure}
-		\end{itemize}
+		\item Choose initial state relevant is
+		\begin{gather}
+			\Psi_0 = \ket{-1,-1,\cdots,-1,1,-1,\cdots,-1,-1}
+		\end{gather}
+		\item Simulation results: $v_g^{max}=\max{\partial\lambda(k)/\partial k}$
+		\begin{figure}[H]
+			\includegraphics[width=0.85 \linewidth]{images/Impur_Mi_D=8_L=21_J=-1.0_t=10.pdf}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{comment}
+	\begin{frame}
+	\frametitle{Results: Spectrum Function}
+	\begin{itemize}
+		\item Set
+		\begin{gather}
+			J=1,\quad h=1,\quad S(k,\omega) = -\frac{1}{\pi}\langle\langle \gamma_k;\gamma_k^\dagger \rangle\rangle_E^{ret}
+		\end{gather}
+		\item Simulation results: $S_{theo}(k,\omega) = \delta(\omega - \lambda(k))$
+		\begin{figure}[H]
+			\includegraphics[width=0.85 \linewidth]{images/Skω_D=8_L=11_J=1.0.pdf}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+\end{comment}
+
+\begin{frame}
+	\frametitle{Model: Heisenberg Chain}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = -J\sum_{i=1}^{N-1}\vb*{\sigma}_i \cdot \vb*{\sigma}_{i+1}
+		\end{equation}
+		we always choose $J = \pm 1.0$.
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{TDVP: 2-site integration}
-	Sweep schemes
+	\frametitle{Results: Dynamical Spin Structure Factor }
 	\begin{itemize}
-		\item Calculate the left/right environment $H_L(t+\Delta t/2)/H_R(t)$.
+		\item Set
+		\begin{gather}
+			J=\pm 1.0,\quad S(\vb{q},\omega) = \int_{-\infty}^{+\infty}\expval{\vb*{\sigma}_{\vb{q}}(t)\cdot \vb*{\sigma}_{-\vb{q}}(0)}\mathrm{e}^{i\omega t}\dd t
+		\end{gather}
+		\item Simulation results:
 		\begin{figure}[H]
-			\includegraphics[width=0.8 \linewidth]{images/LRenv2 t.pdf}
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_8x1_J=((1, 1, 1)).pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_8x1_J=((-1, -1, -1)).pdf}}
 		\end{figure}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{TDVP: 2-site integration}
-	Sweep schemes
+	\frametitle{Model:Free Fermion on Square Lattice}
 	\begin{itemize}
-		\item Calculate the effective Hamiltonian $H_{eff}^{(2)}$
-		\item Time evolution $A_iA_{i+1}(t+\Delta t/2) = \exp(-iH_{eff}^{(2)}\Delta t / 2)A_iA_{i+1}(t)$ 
-		\item OrientSVD and calculate the center with inverse evolution $A_{i+1}(t) = \exp(iH_{eff}^{(1)}\Delta t /2) A_{i+1}(t+\Delta t/2)$, then regard it as nextsite.
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = t\sum_{\langle i,j \rangle}c_i^\dagger c_j + c_j^\dagger c_i
+		\end{equation}
+		\item \textbf{Parameters:} Physics parameters:
+		\begin{equation}
+			t=1
+		\end{equation}
+		\item \textbf{J-W transformation:}
+		\begin{gather}
+			c_i = \prod_{j=1}^{i-1}F_j b_i,\quad c_i^\dagger = \prod_{j=1}^{i-1}F_j b_i^\dagger\\
+			F_j = -\sigma^z_j,\quad b_i = \sigma^-_i,\quad  b_i = \sigma^+_i
+		\end{gather}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Charge compressibility.
+		\begin{gather}
+			\chi = \frac{1}{N}\pdv{N}{\mu}
+		\end{gather}
+		\item Simulation results:
 		\begin{figure}[H]
 			\centering
 			\subfigbottomskip=2pt
 			\subfigcapskip=-5pt
-			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH2 t.pdf}}
-			\subfigure{\includegraphics[height=0.2\linewidth]{images/effH1 t.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=64_20x1.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=32_6x6.pdf}}
 		\end{figure}
 	\end{itemize}
 \end{frame}
@@ -254,17 +381,129 @@ height=9,scale=0.5,debug]{beamerposter}
 \begin{frame}
 	\frametitle{Results}
 	\begin{itemize}
-		\item Choose initial state relevant parameters are
+		\item $k$ dependent Charge compressibility.
 		\begin{gather}
-			\Psi_0 = \ket{-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1}\\
-			t=5/\abs{J},\quad L=13,\quad D=16
+			\chi_k = \frac{1}{N}\pdv{N_k}{\mu}
 		\end{gather}
 		\item Simulation results:
 		\begin{figure}[H]
-			\includegraphics[width=0.75 \linewidth]{images/DiffMi_D=16_L=13_J=-1.0.pdf}
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/bandstructure_D=32_6x1.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/bandstructure_D=8_4x4.pdf}}
 		\end{figure}
-		diffusion can be observed from site 7.
 	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Obserables}
+	\begin{itemize}
+		\item Spectrum function
+		\begin{gather}
+			S(\vb*{k},E) = -\frac{1}{\pi}\mathrm{Im} G^{ret}(\vb*{k},E),\quad 
+			G^{ret}(\vb*{k},E) = \int_{-\infty}^{+\infty} G^{ret}(\vb*{k},t) \mathrm{e}^{iE t}\dd t\\
+				\begin{aligned}
+					G^{ret}(\vb*{k},t) =& -i\Theta(t)\expval{\left[c_k(t)c_k^\dagger(0)\right]}{\Psi_0}\\
+					=&-i[\mathrm{e}^{iE_0t}\left(\bra{\Psi_0}c_k\right)\mathrm{e}^{-iHt}\left(c_k^\dagger\ket{\Psi_0}\right) \\
+					&\quad + \mathrm{e}^{-iE_0t}\left(\bra{\Psi_0}c_k^\dagger\right)\mathrm{e}^{iHt}\left(c_k\ket{\Psi_0}\right) ]
+				\end{aligned}
+		\end{gather}
+		with 
+		\begin{equation}
+			c_k = \sum_{j}\mathrm{e}^{-i\vb*{k}\cdot\vb*{R}_j}c_j
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Simulation Results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=32_6x1.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/Skω_D=8_4x4.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Finite Temperature Results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/fist order_6x1_D=32_μ=1.0.pdf}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/second order_6x1_D=32_μ=1.0.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Model:Hubbard Model on Square Lattice}
+	\begin{itemize}
+		\item \textbf{Hamiltonian:} 
+		\begin{equation}
+			H = t\sum_{\langle i,j \rangle}\left(c_i^\dagger c_j + c_j^\dagger c_i\right) + \frac{U}{2}\sum_{\langle i \rangle}n_{i,\sigma} n_{i,\hat{\sigma}}
+		\end{equation}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\begin{itemize}
+		\item Charge compressibility.
+		\begin{gather}
+			\chi = \frac{1}{N}\pdv{N}{\mu}
+		\end{gather}
+		\item Simulation results:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=20_8x1_U=0.pdf}}
+			\subfigure{\includegraphics[height=0.31\linewidth]{images/χ_D=20_8x1_U=8.pdf}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Benchmark}
+	\begin{itemize}
+		\item DMRG complexity:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/DMRG-memoryD.png}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/DMRG-timeD.png}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Benchmark}
+	\begin{itemize}
+		\item tanTRG + SETTN complexity:
+		\begin{figure}[H]
+			\centering
+			\subfigbottomskip=2pt
+			\subfigcapskip=-5pt
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/tanTRG-memoryD.png}}
+			\subfigure{\includegraphics[height=0.4\linewidth]{images/tanTRG-timeD.png}}
+		\end{figure}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Source code}
+	Can be found at \url{https://github.com/KunyangDU/iMPS.git}, where dev branch is the latest version, but is still under developemnt. 
 \end{frame}
 
 \end{document}

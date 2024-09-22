@@ -1,127 +1,133 @@
 
 function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS::Int64)
-    lsE = Vector{Float64}(undef,Nsweep)
-
-    # 部分改变单侧Env
     # 存储ψ依然使用全局存储
-    # 考虑端点处补充虚拟张量？
 
-    for i in 1:Nsweep
-        println("sweep $i begin")
-        start_time = time()
+    L = length(H)
 
-        Eg = 0
-
-        EnvR = RightEnv(ψ,H,1)
-        Eg, ψ[1:2] = RightUpdateDMRG1(ψ[2],H[1],EnvR,LanczosLevel,D_MPS)
-        EnvL = LeftEnv(ψ[1],H[1])
-        for iL in 2:L-1
-            EnvR = RightEnv(ψ,H,iL)
-            Eg,ψ[iL:iL+1] = RightUpdateDMRG1(ψ[iL+1],H[iL],EnvL,EnvR,LanczosLevel,D_MPS)
-            EnvL = PushRight(EnvL,ψ[iL],H[iL])
-        end
-        println("right sweep finished")
-
-        EnvL = LeftEnv(ψ,H,1)
-        Eg, ψ[end-1:end] = LeftUpdateDMRG1(ψ[end-1],H[end],EnvL,LanczosLevel,D_MPS)
-        EnvR = RightEnv(ψ[end],H[end])
-        #ψ[end-1] =  (ℂ^2 ⊗ ℂ^4 ⊗ (ℂ^2)')
-        for iL in L-1:-1:2
-            EnvL = LeftEnv(ψ,H,iL)
-            Eg,ψ[iL-1:iL] = LeftUpdateDMRG1(ψ[iL-1],H[iL],EnvL,EnvR,LanczosLevel,D_MPS)
-            EnvR = PushLeft(EnvR,ψ[iL],H[iL])
-        end
-        println("left sweep finished")
-        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2))")
-        lsE[i] = Eg
-    end
-    return ψ,lsE
-end
-
-function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
-    EnvR::AbstractTensorMap,
-    LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(Hi,EnvR)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = RightMove(nextψ,Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
-    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
-    LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(Hi,EnvL,EnvR)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = RightMove(nextψ,Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
-    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
-    LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(Hi,EnvL,EnvR)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = LeftMove(nextψ,Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
-    EnvL::AbstractTensorMap,
-    LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(Hi,EnvL)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = LeftMove(nextψ,Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-# stable
-
-function RightUpdateDMRG1(ψ::Vector,H::Vector,site::Int64,LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(ψ,H,site)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = RightMove(ψ[site+1],Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-function LeftUpdateDMRG1(ψ::Vector,H::Vector,site::Int64,LanczosLevel::Int64,D_MPS::Int64)
-
-    reduH = EffHam(ψ,H,site)
-    Eg,Ev = groundEig(reduH,LanczosLevel)
-    MPSs = LeftMove(ψ[site-1],Ev',D_MPS)
-
-    return Eg, MPSs
-end
-
-
-#= function sweepDMRG1(ψ::Vector,H::Vector,Nsweep::Int64,LanczosLevel::Int64,D_MPS::Int64)
     lsE = Vector{Float64}(undef,Nsweep)
 
+    # calculate the Environment
+    lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
+    totaltruncerror = 0
     for i in 1:Nsweep
-        println("sweep $i begin")
+        println("sweep $i")
         start_time = time()
+
         Eg = 0
-        for iL in 1:L-1
-            showdomain(ψ[iL+1])
-            Eg, ψ[iL:iL+1] = updateDMRG1(ψ,H,iL,LanczosLevel,"right",D_MPS)
-            showdomain(ψ[iL])
+        println(">>>>>> begin >>>>>>")
+        for i in 1:L-1
+            Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
+            ψ[i:i+1],temptruncerr = RightMove(ψ[i+1],Ev,D_MPS)
+            #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
+            lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
-        println("right sweep finished")
-        for iL in L:-1:2
-            Eg, ψ[iL-1:iL] = updateDMRG1(ψ,H,iL,LanczosLevel,"left",D_MPS)
+        println(">>>>>> finished >>>>>>")
+
+        println("<<<<<< begin <<<<<<")
+        for i in L:-1:2
+            Eg,Ev = LocalEigen(H[i],lsEnv[i],lsEnv[i+1],LanczosLevel)
+            ψ[i-1:i],temptruncerr = LeftMove(ψ[i-1],Ev,D_MPS)
+            #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
+            lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
         end
-        println("left sweep finished")
-        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2))")
+        println("<<<<<< finished <<<<<<")
+
+        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
         lsE[i] = Eg
     end
+
     return ψ,lsE
-end =#
+end
+
+
+function sweepDMRG2(ψ::Vector,H::Vector,
+    Nsweep::Int64,LanczosLevel::Int64,D_MPS::Int64)
+    # 存储ψ依然使用全局存储
+
+    L = length(H)
+
+    lsE = Vector{Float64}(undef,Nsweep)
+
+    # calculate the Environment
+    lsEnv = vcat(LeftLsEnv(ψ,H,1),RightLsEnv(ψ,H,1))
+
+    totaltruncerror = 0
+    for i in 1:Nsweep
+        println("sweep $i")
+        start_time = time()
+
+        Eg = 0
+        println(">>>>>> begin >>>>>>")
+        for i in 1:L-1
+            #Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel,D_MPS)
+            Eg,Ev = groundEig(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
+            ψ[i:i+1],temptruncerr = RightSVD(Ev,D_MPS)
+            #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
+            lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println(">>>>>> finished >>>>>>")
+
+        println("<<<<<< begin <<<<<<")
+        for i in L:-1:2
+            Eg,Ev = LocalEigen(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel,D_MPS)
+            ψ[i-1:i],temptruncerr = collect(LeftSVD(Ev,D_MPS))
+            #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
+            lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
+            totaltruncerror = max(totaltruncerror,temptruncerr)
+        end
+        println("<<<<<< finished <<<<<<")
+
+        println("sweep $i finished, Eg = $Eg, time consumed $(round(time()-start_time;digits=2)), max truncation error = $(totaltruncerror)")
+        lsE[i] = Eg
+
+        GC.gc()
+    end
+
+    return ψ,lsE
+end
+
+function LocalEigen(Hi::AbstractTensorMap,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64,D_MPS::Int64)
+
+    effH = EffHam(Hi,EnvL,EnvR)
+    return groundEig(effH,LanczosLevel,D_MPS)
+end
+
+function LocalEigen(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64,D_MPS::Int64)
+
+    effH = EffHam(Hi,EnvL,EnvR)
+    return groundEig(effH,LanczosLevel,D_MPS)
+end
+
+
+function RightUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64,D_MPS::Int64)
+
+    effH = EffHam(Hi,EnvL,EnvR)
+    Eg,Ev = groundEig(effH,LanczosLevel,D_MPS)
+    MPSs = RightMove(nextψ,Ev,D_MPS)
+
+    return Eg, MPSs
+end
+
+
+
+function LeftUpdateDMRG1(nextψ::AbstractTensorMap,Hi::AbstractTensorMap,
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64,D_MPS::Int64)
+
+    effH = EffHam(Hi,EnvL,EnvR)
+    Eg,Ev = groundEig(effH,LanczosLevel,D_MPS)
+    MPSs = LeftMove(nextψ,Ev,D_MPS)
+
+    return Eg, MPSs
+end
+
+
