@@ -64,7 +64,7 @@ function RightUpdateTanTRG2(ρs::Vector,Hi::Vector,
     D_MPO::Int64,LanczosLevel::Int64;
     τback::Number = τ)
 
-    ρm = LocalContract(ρs...)
+    ρm = Contract(ρs...)
 
     Aτ = Evolve(ρm,Hi,EnvL,EnvR,τ,LanczosLevel)
     MPOs,truncerr = mySVD(Aτ,"right",D_MPO)
@@ -82,7 +82,7 @@ function LeftUpdateTanTRG2(ρs::Vector,Hi::Vector,
     D_MPO::Int64,LanczosLevel::Int64;
     τback::Number = τ)
 
-    ρm = LocalContract(ρs...)
+    ρm = Contract(ρs...)
     Aτ = Evolve(ρm,Hi,EnvL,EnvR,τ,LanczosLevel)
 
     MPOs,truncerr = mySVD(Aτ,"left",D_MPO)

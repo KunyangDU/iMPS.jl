@@ -1,16 +1,32 @@
+# Contract
+# Pure merge between two local MPO or local MPS
 
-function LocalContract(
+function Contract(
     Opr1::AbstractTensorMap{ComplexSpace,1,3},
     Opr2::AbstractTensorMap{ComplexSpace,2,2})
     @tensor tempOpr[-1,-2,-3,-4,-5,-6] ≔ Opr1[-2,-3,-4,1]*Opr2[-1,1,-5,-6]
     return permute(tempOpr,(1,2),(3,4,5,6))
 end
 
-function LocalContract(
+function Contract(
     Opr1::AbstractTensorMap{ComplexSpace,2,2},
     Opr2::AbstractTensorMap{ComplexSpace,1,3})
     @tensor tempOpr[-1,-2,-3,-4,-5,-6] ≔ Opr1[1,-2,-3,-4]*Opr2[-1,1,-5,-6]
     return permute(tempOpr,(1,2),(3,4,5,6))
+end
+
+function Contract(ψ1::AbstractTensorMap{ComplexSpace,1,2},
+    ψ2::AbstractTensorMap{ComplexSpace,0,3})
+
+    @tensor ψm[-1,-2,-3,-4] ≔ ψ1[1,-1,-2] * ψ2[1,-3,-4]
+    return permute(ψm,(),(1,2,3,4))
+end
+
+function Contract(ψ1::AbstractTensorMap{ComplexSpace,0,3},
+    ψ2::AbstractTensorMap{ComplexSpace,1,2})
+
+    @tensor ψm[-1,-2,-3,-4] ≔ ψ1[-1,-2,1] * ψ2[1,-3,-4]
+    return permute(ψm,(),(1,2,3,4))
 end
 
 function InnerProd(ψ₁::Vector,ψ₂::Vector)

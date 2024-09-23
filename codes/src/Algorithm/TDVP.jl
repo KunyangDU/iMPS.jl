@@ -221,7 +221,7 @@ function RightUpdateTDVP2(ψs::Vector,Hi::Vector,
     D_MPS::Int64,LanczosLevel::Int64;
     τback::Number = τ)
 
-    ψm = LocalMerge(ψs...)
+    ψm = Contract(ψs...)
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψm,EvolveOpr(effH,τ))
 
@@ -241,7 +241,7 @@ function LeftUpdateTDVP2(ψs::Vector,Hi::Vector,
     D_MPS::Int64,LanczosLevel::Int64;
     τback::Number = τ)
 
-    ψm = LocalMerge(ψs...)
+    ψm = Contract(ψs...)
     effH = EffHam(Hi,EnvL,EnvR)
     Aτ = Apply(ψm,EvolveOpr(effH,τ))
     #Aτ = Evolve(ψm,Hi,EnvL,EnvR,τ,LanczosLevel)

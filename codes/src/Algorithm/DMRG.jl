@@ -61,10 +61,9 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         Eg = 0
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
-            #Eg,Ev = LocalEigen(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel,D_MPS)
             Eg,Ev = groundEig(H[i:i+1],lsEnv[i],lsEnv[i+2],LanczosLevel)
             ψ[i:i+1],temptruncerr = RightSVD(Ev,D_MPS)
-            #Eg, ψ[i:i+1] = RightUpdateDMRG1(ψ[i+1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
+            H[i:i+1] = Move(H[i:i+1]...)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end
@@ -73,8 +72,8 @@ function sweepDMRG2(ψ::Vector,H::Vector,
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
             Eg,Ev = groundEig(H[i-1:i],lsEnv[i-1],lsEnv[i+1],LanczosLevel)
+            H[i-1:i] = Move(H[i-1:i]...)
             ψ[i-1:i],temptruncerr = collect(LeftSVD(Ev,D_MPS))
-            #Eg, ψ[i-1:i] = LeftUpdateDMRG1(ψ[i-1],H[i],lsEnv[i],lsEnv[i+1],LanczosLevel,D_MPS)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end

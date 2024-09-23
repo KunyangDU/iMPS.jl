@@ -60,6 +60,18 @@ function mySVD(Opri::AbstractTensorMap{ComplexSpace, 2, 4},
     end
 end
 
+function mySVD(Opri::AbstractTensorMap{ComplexSpace, 2, 4},
+    direction::String, trunc::Float64)
+    if direction == "right"
+        U,S,V = tsvd(Opri,(5,6,1),(2,3,4);trunc = truncerr(trunc))
+        return [permute(V,(1,2),(3,4)),permute(U*S,(3,),(4,1,2))],convert(Int64,sqrt(dim(space(S))...))
+    elseif direction == "left"
+        U,S,V = tsvd(Opri,(2,3,4),(5,6,1);trunc = truncerr(trunc))
+        return [permute(U*S,(1,),(2,3,4)),permute(V,(4,1),(2,3))],convert(Int64,sqrt(dim(space(S))...))
+    else
+        @error "direction does not exist!"
+    end
+end
 
 function mySVD(
     ψ1::AbstractTensorMap{ComplexSpace, 0, 3},

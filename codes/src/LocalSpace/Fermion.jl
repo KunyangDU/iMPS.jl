@@ -1,10 +1,11 @@
 module SpinlessFermion
 using TensorKit
-phys = (ℂ^2)'
 
-const JWstring2 = TensorMap([-1 0; 0 1],phys,phys)
-const FermionCreation2 = TensorMap([0 1;0 0],phys,phys)
-const FermionAnnihilation2 = TensorMap([0 0;1 0],phys,phys)
+const d = 2
+const PhySpace = (ℂ^d)'
+const JWstring2 = TensorMap([-1 0; 0 1],PhySpace,PhySpace)
+const FermionCreation2 = TensorMap([0 1;0 0],PhySpace,PhySpace)
+const FermionAnnihilation2 = TensorMap([0 0;1 0],PhySpace,PhySpace)
 
 const Z = let 
     JWstring2
@@ -26,7 +27,6 @@ end
 
 module Spin2Fermion
 using TensorKit
-phys  = (ℂ^4)'
 
 function diagm(dg::Vector{T}) where T
     L = length(dg)
@@ -55,9 +55,12 @@ function diagm(pair::Pair{Int64, Vector{T}}) where T
     return mat
 end
 
-const JWstring4 = TensorMap(diagm([1,-1,-1,1]),phys,phys)
-const FermionCreationUp4 = TensorMap(diagm(2 => [1,1]),phys,phys)
-const FermionCreationDown4 = TensorMap(diagm(1 => [1,0,1]),phys,phys)
+const d = 4
+const PhySpace = (ℂ^d)'
+
+const JWstring4 = TensorMap(diagm([1,-1,-1,1]),PhySpace,PhySpace)
+const FermionCreationUp4 = TensorMap(diagm(2 => [1,1]),PhySpace,PhySpace)
+const FermionCreationDown4 = TensorMap(diagm(1 => [1,0,1]),PhySpace,PhySpace)
 
 const Z = let 
     JWstring4

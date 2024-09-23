@@ -189,7 +189,11 @@ function RightLsEnv(
     return lsEnvR
 end
 
-function RightLsEnv(ψ1::Vector,H::Vector{AbstractTensorMap{ComplexSpace,2,2}},ψ2::Vector,site::Int64)
+function RightLsEnv(
+    ψ1::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
+    H::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    ψ2::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}}
+    ,site::Int64)
 
     LR = length(H) + 1 - site
     lsEnvR = Vector{AbstractTensorMap}(undef,LR)
@@ -202,6 +206,63 @@ function RightLsEnv(ψ1::Vector,H::Vector{AbstractTensorMap{ComplexSpace,2,2}},�
 
     return lsEnvR
 end
+
+
+function LeftLsEnv(
+    ψ::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
+    H::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    site::Int64
+    )
+
+    LL = site
+    lsEnvL = Vector{AbstractTensorMap}(undef,LL)
+
+    lsEnvL[1] = InitialLeftEnv()
+    for i in 2:LL
+        lsEnvL[i] = PushRight(lsEnvL[i - 1],ψ[i - 1],H[i - 1])
+    end
+
+    return lsEnvL
+end
+
+function LeftLsEnv(
+    ψ1::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
+    H::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    ψ2::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
+    site::Int64
+    )
+
+    LL = site
+    lsEnvL = Vector{AbstractTensorMap}(undef,LL)
+
+    lsEnvL[1] = InitialLeftEnv()
+    for i in 2:LL
+        lsEnvL[i] = PushRight(lsEnvL[i - 1],ψ1[i - 1],H[i - 1],ψ2[i - 1])
+    end
+
+    return lsEnvL
+end
+
+############### normlized Opr ###############
+
+function RightLsEnv(
+    ψ::Vector{Union{AbstractTensorMap{ComplexSpace,0,3},AbstractTensorMap{ComplexSpace,1,2}}},
+    Opr::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}},
+    site::Int64
+    )
+
+    LR = length(ψ) + 1 - site
+    lsEnvR = Vector{AbstractTensorMap{ComplexSpace,2,1}}(undef,LR)
+
+    lsEnvR[LR] = InitialEnv(lsEnvR;ds = map(x -> dims(domain(x[end]))[2],[ψ,Opr,ψ]))
+
+    for i in LR-1:-1:1
+        lsEnvR[i] = PushLeft(lsEnvR[i+1],ψ[site + i],Opr[site + i])
+    end
+
+    return lsEnvR
+end
+
 
 function RightLsEnv(
     Opr1::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}},
@@ -257,27 +318,19 @@ function RightLsEnv(
     return lsEnvR
 end
 
-function LeftLsEnv(ψ::Vector,H::Vector,site::Int64)
+function LeftLsEnv(
+    ψ::Vector{Union{AbstractTensorMap{ComplexSpace,0,3},AbstractTensorMap{ComplexSpace,1,2}}},
+    Opr::Vector{Union{AbstractTensorMap{ComplexSpace,2,2},AbstractTensorMap{ComplexSpace,1,3}}},
+    site::Int64
+    )
 
     LL = site
-    lsEnvL = Vector{AbstractTensorMap}(undef,LL)
+    lsEnvL = Vector{AbstractTensorMap{ComplexSpace,2,1}}(undef,LL)
 
-    lsEnvL[1] = InitialLeftEnv()
+    lsEnvL[1] = InitialEnv(lsEnvL;ds = map(x -> dims(domain(x[1]))[1],[ψ,Opr,ψ]))
+    
     for i in 2:LL
-        lsEnvL[i] = PushRight(lsEnvL[i - 1],ψ[i - 1],H[i - 1])
-    end
-
-    return lsEnvL
-end
-
-function LeftLsEnv(ψ1::Vector,H::Vector,ψ2::Vector,site::Int64)
-
-    LL = site
-    lsEnvL = Vector{AbstractTensorMap}(undef,LL)
-
-    lsEnvL[1] = InitialLeftEnv()
-    for i in 2:LL
-        lsEnvL[i] = PushRight(lsEnvL[i - 1],ψ1[i - 1],H[i - 1],ψ2[i - 1])
+        lsEnvL[i] = PushRight(lsEnvL[i-1],ψ[site - i],Opr[site - i])
     end
 
     return lsEnvL
@@ -337,5 +390,4 @@ function LeftLsEnv(
 
     return lsEnvL
 end
-
 

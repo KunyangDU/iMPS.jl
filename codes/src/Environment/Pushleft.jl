@@ -11,6 +11,8 @@ function PushLeft(EnvR::AbstractTensorMap{ComplexSpace,1,2},ψi1::AbstractTensor
     return permute(EnvRR,(1,),(2,3))
 end
 
+#################### normalized ####################
+
 function PushLeft(EnvR::AbstractTensorMap{ComplexSpace,1,1},ψi1::AbstractTensorMap{ComplexSpace,1,2},ψi2::AbstractTensorMap{ComplexSpace,1,2})
     @tensor EnvRR[-1,-2] ≔ ψi1[-1,3,1] * ψi2'[3,2,-2] * EnvR[1,2]
     return permute(EnvRR,(1,),(2,))

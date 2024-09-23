@@ -8,7 +8,7 @@ include("Environment/Pushright.jl")
 
 include("Operations/Move.jl")
 include("Operations/Merge.jl")
-include("Operations/Action.jl")
+include("Operations/Contract.jl")
 include("Operations/SVD.jl")
 include("Operations/Variation.jl")
 
@@ -16,9 +16,10 @@ include("MPS/MPS.jl")
 include("MPS/Operations.jl")
 
 include("MPO/MPO.jl")
-include("MPO/Canonicalize.jl")
+include("MPO/Normalize.jl")
 include("MPO/Operations.jl")
 include("MPO/Operators.jl")
+include("MPO/ObsMPO.jl")
 
 include("Tools/Tools.jl")
 include("Tools/geometry.jl")
@@ -26,12 +27,14 @@ include("Tools/algebra.jl")
 
 include("IntrTree/LocalOperator.jl")
 include("IntrTree/Node.jl")
+include("IntrTree/addIntr.jl")
 include("IntrTree/addIntr1.jl")
 include("IntrTree/addIntr2.jl")
 include("IntrTree/Automata.jl")
 
-include("Observables/CalculateObs.jl")
-include("Observables/Obserables.jl")
+include("Observables/ObsTree.jl")
+include("Observables/calObs.jl")
+include("Observables/addObs.jl")
 
 include("LocalSpace/Fermion.jl")
 include("LocalSpace/Spin.jl")

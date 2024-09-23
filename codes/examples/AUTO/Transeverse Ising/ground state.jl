@@ -10,10 +10,13 @@ Nsweep = 5
 LanczosLevel = 15
 D_MPS = 2^3
 
-H = Hamiltonian(Latt;J=J,h=0)
+H,D_MPO = compress(canonicalize(Hamiltonian(Latt;J=J,h=0)))
 
-ψ = IsingRandMPS(Latt)
+ψ = InitialRandΨ(Latt)
 
 ψ,lsE = sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS)
 
 showQuantSweep(lsE)
+@save "examples/AUTO/Transeverse Ising/data/ψ_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_J=$(J).jld2" ψ
+@save "examples/AUTO/Transeverse Ising/data/lsE_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_J=$(J).jld2" lsE
+

@@ -21,7 +21,7 @@ Nsweep = 3
 
 for μ in lsμ
     @show μ
-    H = Hamiltonian(Latt;t=t,μ=μ,U=U)
+    H,D_MPO = compress(canonicalize(Hamiltonian(Latt;t=t,μ=μ,U=U)))
     ψ = RandMPS(Lx*Ly;d=d)
     ψ,lsE = sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS)
 

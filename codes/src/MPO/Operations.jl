@@ -34,4 +34,3 @@ function Trace(
     return ApproxReal(tr[1]/Z)
 end
 
-

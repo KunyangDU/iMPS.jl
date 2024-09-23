@@ -1,7 +1,10 @@
 
 function AutomataMPO(Tree::InteractionTree,L::Int64 = treeheight(Tree.Root) - 1)
-    Root = Tree.Root
+    @show Tree
+    return AutomataMPO(Tree.Root,L)
+end
 
+function AutomataMPO(Root::InteractionTreeNode,L::Int64=treeheight(Root) - 1)
     MPO = let 
         tempMPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef,L)
 
@@ -73,7 +76,7 @@ function AutomataMPO(Tree::InteractionTree,L::Int64 = treeheight(Tree.Root) - 1)
 
         tempMPO
     end
-    
+
     return MPO
 end
 

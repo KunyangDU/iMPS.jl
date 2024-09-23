@@ -1,11 +1,12 @@
 module Spin2
 using TensorKit
-phys = (ℂ^2)'
 
-const Spinσ0 = TensorMap([1 0;0 1],phys,phys)
-const Spinσx = TensorMap([0 1;1 0],phys,phys)
-const Spinσy = TensorMap([0 -1im;1im 0],phys,phys)
-const Spinσz = TensorMap([1 0; 0 -1],phys,phys)
+const d = 2
+const PhySpace = (ℂ^d)'
+const Spinσ0 = TensorMap([1 0;0 1],PhySpace,PhySpace)
+const Spinσx = TensorMap([0 1;1 0],PhySpace,PhySpace)
+const Spinσy = TensorMap([0 -1im;1im 0],PhySpace,PhySpace)
+const Spinσz = TensorMap([1 0; 0 -1],PhySpace,PhySpace)
 
 const I = let 
     Spinσ0

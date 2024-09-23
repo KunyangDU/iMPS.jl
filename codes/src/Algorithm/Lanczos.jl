@@ -1,4 +1,4 @@
-function Lanczos(M::AbstractTensorMap,level::Int64)
+#= function Lanczos(M::AbstractTensorMap,level::Int64)
     Mdm = domain(M)
     Q = Vector{AbstractTensorMap}(undef, level)
     α = zeros(ComplexF64,level)
@@ -79,32 +79,57 @@ function groundEig(A::AbstractMatrix, k::Int)
     T, Q = Lanczos(A, k)
     λ, v = eigen(T)
     return argmin(λ) |> x -> (λ[x], Q * v[:, x])
+end =#
+
+
+#= function groundEig(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    LanczosLevel::Int64)
+    T, Q = Lanczos(Hi,EnvL,EnvR,LanczosLevel)
+    λ, v = eigen(T)
+    Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
+    return Eg, Ev / norm(Ev)
+end =#
+
+function groundEig(Oprs::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,1,2},
+    LanczosLevel::Int64)
+
+    q1 = let 
+    Tensor(rand, ComplexF64, ⊗(codomain(EnvL)[1],let 
+        spaces = []
+        for h in Oprs 
+            push!(spaces,collect(codomain(h))[2])
+        end
+        spaces
+        end...,codomain(EnvR)[1])) |> x -> x' / norm(x)
+    end
+
+    T, Q = Lanczos(Oprs,EnvL,EnvR,q1,LanczosLevel)
+    λ, v = eigen(T)
+    Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
+    return Eg, Ev / norm(Ev)
 end
 
-function Lanczos(Hi::Vector,
+########### normalized ##########
+
+
+function Lanczos(Oprs::Vector,
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    q1::AbstractTensorMap,
     LanczosLevel::Int64;kwargs...)
     Q = Vector{AbstractTensorMap}(undef, LanczosLevel)
     α = zeros(LanczosLevel)
     β = zeros(LanczosLevel-1)
 
-    q1 = get(kwargs,:q1,let 
-        Tensor(rand, ComplexF64, ⊗(codomain(EnvL)[1],let 
-            spaces = []
-            for h in Hi 
-                push!(spaces,domain(h)[2])
-            end
-            spaces
-            end...,codomain(EnvR)[1])) |> x -> x' / norm(x)
-    end)
     Q[1] = q1
 
 
     for j = 1:LanczosLevel
         if j == 1
-            w = LocalMerge(EnvL,Q[j],Hi...,EnvR)
+            w = EnvMerge(EnvL,Q[j],Oprs...,EnvR)
         else
-            w = LocalMerge(EnvL,Q[j],Hi...,EnvR) - β[j-1] * Q[j-1]
+            w = EnvMerge(EnvL,Q[j],Oprs...,EnvR) - β[j-1] * Q[j-1]
         end
 
         α[j] = ApproxReal((w*Q[j]')[1])
@@ -125,31 +150,35 @@ function Lanczos(Hi::Vector,
     
 end
 
-function groundEig(Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
-    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+function groundEig(Oprs::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,2,1},
     LanczosLevel::Int64)
-    T, Q = Lanczos(Hi,EnvL,EnvR,LanczosLevel)
+
+    q1 = let 
+        Tensor(rand, ComplexF64, ⊗(codomain(EnvL)[1],let 
+            if typeof(Oprs[1]) <: AbstractTensorMap{ComplexSpace,1,3}
+                map(x -> collect(codomain(x))[1],Oprs)
+            elseif typeof(Oprs[2]) <: AbstractTensorMap{ComplexSpace,1,3}
+                map(x -> collect(codomain(x))[end],Oprs)
+            else
+                @error "Oprs form error"
+            end
+        end...,codomain(EnvR)[1])) |> x -> x' / norm(x)
+    end
+
+    T, Q = Lanczos(Oprs,EnvL,EnvR,q1,LanczosLevel)
     λ, v = eigen(T)
     Eg,Ev = argmin(real.(λ)) |> x -> (real.(λ)[x], sum(Q .* v[:, x]))
     return Eg, Ev / norm(Ev)
 end
 
 function Evolve(
-    localψ::AbstractTensorMap,
-    Hi::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
-    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    localψ::AbstractTensorMap{ComplexSpace,2,4},
+    Oprs::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,2,1},
     τ::Number,
     LanczosLevel::Int64)
-    τHi = Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}}(undef,length(Hi))
-    for (hi,h) in enumerate(Hi)
-        if typeof(h) <: AbstractTensorMap{ComplexSpace,1,3}
-            τHi[hi] = -τ*h
-        else
-            τHi[hi] = h
-        end
-    end
-    T, Q = Lanczos(τHi,EnvL,EnvR,LanczosLevel;q1 = localψ / norm(localψ))
-    A = sum(norm(localψ) * exp(T)[:,1] .* Q)
+    T, Q = Lanczos(Oprs,EnvL,EnvR,q1 = localψ / norm(localψ),LanczosLevel)
+    A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
     return A
-    #return A |> x -> x*norm(localψ)
 end

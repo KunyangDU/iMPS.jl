@@ -21,7 +21,7 @@ mutable struct InteractionTreeNode
     return new(Opr,nothing,children)
     end
 
-    InteractionTreeNode() = InteractionTreeNode("O", nothing)
+    InteractionTreeNode() = InteractionTreeNode(IdentityOperator(0))
 end
 
 AbstractTrees.nodevalue(node::InteractionTreeNode) = node.Opr
@@ -43,6 +43,10 @@ function addchild!(node::InteractionTreeNode, Opr::AbstractLocalOperator)
     return nothing
 end
 
+function cutparent!(node::InteractionTreeNode)
+    node.parent = nothing
+end
+
 
 function Base.show(io::IO,Root::InteractionTreeNode)
     print_tree(Root;maxdepth = 16)
@@ -61,5 +65,16 @@ struct InteractionTree{N}
          end
          return new{N}(Root)
     end
+
+    function InteractionTree{N}() where N
+         
+        Root = InteractionTreeNode(nothing)
+        for i in 1:N
+             addchild!(Root, InteractionTreeNode(IdentityOperator(0)))
+        end
+        return new{N}(Root)
+   end
+
+   InteractionTree() = InteractionTree(InteractionTreeNode(IdentityOperator(0)))
 end
 
