@@ -1,5 +1,7 @@
 include("../../../../../src/iMPS.jl")
 include("../../model.jl")
+include("../../../../AUTO/Spinless Fermion/model.jl")
+
 
 Lx = 6
 Ly = 1
@@ -18,14 +20,15 @@ maxd = FindMaxDist(neighbor(Latt))
 D_MPO = d*(2*maxd + 2)
 
 LanczosLevel = D_MPO*d
-Nsweep = 3
-for μ in [0.0]
+Nsweep = 5
+for μ in [-1.0]
     @show μ
-    H = HamMPO(Latt;μ=μ)
+    H,D_MPO = compress(canonicalize(HamMPO(Latt;μ=μ)))
     ψ = RandMPS(Lx*Ly;d=d)
     ψ,lsE = sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS)
 
     showQuantSweep(lsE;name="Eg sweep")
+    @show QuantUniv(ψ,ParticleNumber(Latt))
     
     #@save "examples/Free Fermion/data/$(Lx)x$(Ly)/ψ_D=$(D_MPS)_$(Lx)x$(Ly)_t=$(t)_μ=$(μ).jld2" ψ
     #@save "examples/Free Fermion/data/$(Lx)x$(Ly)/lsE_D=$(D_MPS)_$(Lx)x$(Ly)_t=$(t)_μ=$(μ).jld2" lsE
@@ -33,4 +36,3 @@ end
 #= H = HamMPO(Latt;μ=μ)
 ψ = RandMPS(Lx*Ly)
 @benchmark sweepDMRG2(ψ,H,Nsweep,LanczosLevel,D_MPS) =#
-

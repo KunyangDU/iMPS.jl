@@ -1,7 +1,7 @@
 LocalSpace = Spin2
 
 function Hamiltonian(Latt::AbstractLattice;
-    J::Number=1,h::Number=0,
+    J::Number=1,h::Number=0,hz::Number = 0,
     returntree::Bool=false)
 
     Root = InteractionTreeNode()
@@ -9,6 +9,7 @@ function Hamiltonian(Latt::AbstractLattice;
 
     for i in 1:size(Latt)
         addIntr!(Root,LocalSpace.Sx,i,"Sx",h,nothing)
+        addIntr!(Root,LocalSpace.Sz,i,"Sz",hz,nothing)
     end
     
     for pair in neighbor(Latt)

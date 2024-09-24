@@ -1,13 +1,11 @@
 
-
+LocalSpace = SpinlessFermion
 function Hamiltonian(Latt::AbstractLattice;t::Number=1,U::Number=0,μ::Number=0,returntree::Bool=false)
 
     Root = InteractionTreeNode(IdentityOperator(0))
 
-    LocalSpace = SpinlessFermion
-
     for i in 1:size(Latt)
-        addIntr1!(Root,SpinlessFermion.n,"n",i,-μ)
+        addIntr!(Root,LocalSpace.n,i,"n",-μ,nothing)
     end
     
     for pair in neighbor(Latt)
@@ -22,16 +20,14 @@ function Hamiltonian(Latt::AbstractLattice;t::Number=1,U::Number=0,μ::Number=0,
     end
 end
 
-function SpinlessFermionRandMPS(Latt::AbstractLattice)
-    return RandMPS(size(Latt);d=2)   
+function InitialRandΨ(Latt::AbstractLattice)
+    return RandMPS(size(Latt);d=LocalSpace.d)   
 end
 
 function ParticleNumber(Latt::AbstractLattice,site::Int64)
     Root = InteractionTreeNode(IdentityOperator(0))
 
-    LocalSpace = SpinlessFermion
-
-    addIntr1!(Root,LocalSpace.n,"n",site,1)
+    addIntr!(Root,LocalSpace.n,site,"n",1,nothing)
 
     return AutomataMPO(InteractionTree(Root))
 end
@@ -39,10 +35,8 @@ end
 function ParticleNumber(Latt::AbstractLattice)
     Root = InteractionTreeNode(IdentityOperator(0))
 
-    LocalSpace = SpinlessFermion
-
-    for i in 1:size(Latt)
-        addIntr1!(Root,LocalSpace.n,"n",i,1)
+    for site in 1:size(Latt)
+        addIntr!(Root,LocalSpace.n,site,"n",1,nothing)
     end
 
     return AutomataMPO(InteractionTree(Root)) 

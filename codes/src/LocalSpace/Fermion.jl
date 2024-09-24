@@ -23,6 +23,10 @@ const n = let
     FermionCreation2*FermionAnnihilation2
 end
 
+const nn = let 
+    n, n
+end
+
 end
 
 module Spin2Fermion

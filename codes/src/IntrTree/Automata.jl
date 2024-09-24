@@ -1,6 +1,5 @@
 
 function AutomataMPO(Tree::InteractionTree,L::Int64 = treeheight(Tree.Root) - 1)
-    @show Tree
     return AutomataMPO(Tree.Root,L)
 end
 

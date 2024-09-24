@@ -1,6 +1,8 @@
 # Variation operations
 
-function VariContract(Opr::Vector{AbstractTensorMap{ComplexSpace,2,2}},ψ₀::Vector,D_MPS::Int64;
+function VariContract(Opr::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    ψ₀::Vector{Union{AbstractTensorMap{ComplexSpace,1,2},AbstractTensorMap{ComplexSpace,0,3}}},
+    D_MPS::Int64;
     d::Number=2,MaxIter::Int64=4)
 
     L = length(Opr)
