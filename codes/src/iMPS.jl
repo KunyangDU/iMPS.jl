@@ -35,6 +35,7 @@ include("IntrTree/Automata.jl")
 include("Observables/ObsTree.jl")
 include("Observables/calObs.jl")
 include("Observables/addObs.jl")
+include("Observables/Observables.jl")
 
 include("LocalSpace/Fermion.jl")
 include("LocalSpace/Spin.jl")

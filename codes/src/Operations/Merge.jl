@@ -19,7 +19,7 @@ function SVDMerge(
     svdOpri2::AbstractTensorMap{ComplexSpace, 0, 2},
     )
     @tensor tempMPO[-1,-2,-3,-4] ≔ svdOpri2[1,-2]*Opri2[-1,1,-3,-4]
-
+    #return Vector{Union{AbstractTensorMap{ComplexSpace, 1, 3},AbstractTensorMap{ComplexSpace, 2, 2}}}(undef,2) |> x -> (x=[svdOpri1,permute(tempMPO,(1,),(2,3,4))])
     return [svdOpri1,permute(tempMPO,(1,),(2,3,4))]
 end
 
@@ -137,29 +137,30 @@ function EnvMerge(
     return permute(tempMPS,(),(1,2,3,4))
 end
 
-
 function EnvMerge(
     EnvL::AbstractTensorMap{ComplexSpace,2,1},
-    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    ψ1::AbstractTensorMap{ComplexSpace,0,3},
+    ψ2::AbstractTensorMap{ComplexSpace,1,2},
     Opr1::AbstractTensorMap{ComplexSpace,1,3},
     Opr2::AbstractTensorMap{ComplexSpace,2,2},
     EnvR::AbstractTensorMap{ComplexSpace,2,1}
     )
 
-    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[1,2,-3]*localOpr[-1,-2,1,3,5,6]*Opr1[3,2,-4,4]*Opr2[5,4,-5,7]*EnvR[6,7,-6]
-    return permute(tempMPS,(1,2),(3,4,5,6))
+    @tensor tempMPS[-1,-2,-3,-4] ≔ EnvL[1,2,-1]*ψ1[1,3,4]*Opr1[3,2,-2,5]*ψ2[4,6,7]*Opr2[6,5,-3,8]*EnvR[7,8,-4]
+    return permute(tempMPS,(),(1,2,3,4))
 end
 
 function EnvMerge(
     EnvL::AbstractTensorMap{ComplexSpace,2,1},
-    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    ψ1::AbstractTensorMap{ComplexSpace,1,2},
+    ψ2::AbstractTensorMap{ComplexSpace,0,3},
     Opr1::AbstractTensorMap{ComplexSpace,2,2},
     Opr2::AbstractTensorMap{ComplexSpace,1,3},
     EnvR::AbstractTensorMap{ComplexSpace,2,1}
     )
 
-    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[6,7,-3]*Opr1[4,5,7,-4]*Opr2[3,4,-5,2]*localOpr[-1,-2,6,5,3,1]*EnvR[1,2,-6]
-    return permute(tempMPS,(1,2),(3,4,5,6))
+    @tensor tempMPS[-1,-2,-3,-4] ≔ EnvL[7,8,-1]*ψ1[4,7,6]*Opr1[5,6,8,-2]*ψ2[4,3,1]*Opr2[3,5,-3,2]*EnvR[1,2,-4]
+    return permute(tempMPS,(),(1,2,3,4))
 end
 
 function EnvMerge(
@@ -187,6 +188,30 @@ end
 
 function EnvMerge(
     EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    Opr1::AbstractTensorMap{ComplexSpace,1,3},
+    Opr2::AbstractTensorMap{ComplexSpace,2,2},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[1,2,-3]*localOpr[-1,-2,1,3,5,6]*Opr1[3,2,-4,4]*Opr2[5,4,-5,7]*EnvR[6,7,-6]
+    return permute(tempMPS,(1,2),(3,4,5,6))
+end
+
+function EnvMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localOpr::AbstractTensorMap{ComplexSpace,2,4},
+    Opr1::AbstractTensorMap{ComplexSpace,2,2},
+    Opr2::AbstractTensorMap{ComplexSpace,1,3},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3,-4,-5,-6] ≔ EnvL[6,7,-3]*Opr1[4,5,7,-4]*Opr2[3,4,-5,2]*localOpr[-1,-2,6,5,3,1]*EnvR[1,2,-6]
+    return permute(tempMPS,(1,2),(3,4,5,6))
+end
+
+function EnvMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
     localOpr::AbstractTensorMap{ComplexSpace,1,3},
     Opr::AbstractTensorMap{ComplexSpace,1,3},
     EnvR::AbstractTensorMap{ComplexSpace,2,1}
@@ -194,6 +219,17 @@ function EnvMerge(
 
     @tensor tempMPS[-1,-2,-3,-4] ≔ EnvL[1,2,-2]*localOpr[-1,1,3,4]*Opr[3,2,-3,5]*EnvR[4,5,-4]
     return permute(tempMPS,(1,),(2,3,4))
+end
+
+function EnvMerge(
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},
+    localψ::AbstractTensorMap{ComplexSpace,0,3},
+    Opr::AbstractTensorMap{ComplexSpace,1,3},
+    EnvR::AbstractTensorMap{ComplexSpace,2,1}
+    )
+
+    @tensor tempMPS[-1,-2,-3] ≔ EnvL[1,2,-1]*localψ[1,3,4]*Opr[3,2,-2,5]*EnvR[4,5,-3]
+    return permute(tempMPS,(),(1,2,3))
 end
 
 ########### NON - normalized ###########

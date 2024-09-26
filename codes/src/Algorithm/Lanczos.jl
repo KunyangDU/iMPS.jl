@@ -178,7 +178,33 @@ function Evolve(
     EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,2,1},
     τ::Number,
     LanczosLevel::Int64)
-    T, Q = Lanczos(Oprs,EnvL,EnvR,q1 = localψ / norm(localψ),LanczosLevel)
+    q1 = localψ / norm(localψ)
+    T, Q = Lanczos(Oprs,EnvL,EnvR,q1,LanczosLevel)
     A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
     return A
 end
+
+function Evolve(
+    localψ::AbstractTensorMap{ComplexSpace,0,4},
+    Oprs::Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}},
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,2,1},
+    τ::Number,
+    LanczosLevel::Int64)
+    q1 = localψ / norm(localψ)
+    T, Q = Lanczos(Oprs,EnvL,EnvR,q1,LanczosLevel)
+    A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
+    return A
+end
+
+function Evolve(
+    localψ::Union{AbstractTensorMap{ComplexSpace,0,3},AbstractTensorMap{ComplexSpace,1,3}},
+    Opr::AbstractTensorMap{ComplexSpace,1,3},
+    EnvL::AbstractTensorMap{ComplexSpace,2,1},EnvR::AbstractTensorMap{ComplexSpace,2,1},
+    τ::Number,
+    LanczosLevel::Int64)
+    q1 = localψ / norm(localψ)
+    T, Q = Lanczos([Opr],EnvL,EnvR,q1,LanczosLevel)
+    A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
+    return A
+end
+

@@ -2,19 +2,19 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 6
+Lx = 8
 Ly = 1
 
 t = 1
 μ = 0.0
 U = 8
 
-D_MPS = 20
+D_MPS = 2^5
 
-Skω = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/Skω_D=$(D_MPS)_$(Lx)x$(Ly)_t=$(t)_U=$(U).jld2")["Skω"]
-lsω = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/lsω_$(Lx)x$(Ly).jld2")["lsω"]
-kr = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/kr_$(Lx)x$(Ly).jld2")["thiskr"]
-lsE = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/lsE_D=$(D_MPS)_$(Lx)x$(Ly)_t=$(t)_U=$(U)_μ=$(μ).jld2")["lsE"]
+Skω = load("../codes/examples/AUTO/Hubbard/data/Skω_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["Skω"]
+lsω = load("../codes/examples/AUTO/Hubbard/data/lsω_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["lsω"]
+kr = load("../codes/examples/AUTO/Hubbard/data/kr_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["kr"]
+lsE = load("../codes/examples/AUTO/Hubbard/data/lsE_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["lsE"]
 
 width,height = 1 .* (300,200)
 
@@ -42,11 +42,11 @@ for xv in xtickvalues
     lines!(ax,[xv,xv],collect(extrema(lsω)),color = :black)
 end
 
-#ylims!(ax,-6,6)
+ylims!(ax,-12,12)
 
 resize_to_layout!(fig)
 display(fig)
 
-save("Hubbard/figures/Skω_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).pdf",fig)
+save("Hubbard/figures/Skω_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2",fig)
 
 

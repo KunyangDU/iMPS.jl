@@ -21,6 +21,11 @@ function PushRight(EnvL::AbstractTensorMap{ComplexSpace,2,1},ψi::AbstractTensor
     return permute(EnvLL,(1,2),(3,))
 end
 
+function PushRight(EnvL::AbstractTensorMap{ComplexSpace,2,1},ψi1::AbstractTensorMap{ComplexSpace,1,2},Opri::AbstractTensorMap{ComplexSpace,2,2},ψi2::AbstractTensorMap{ComplexSpace,1,2})
+    @tensor EnvLL[-1,-2,-3] ≔ EnvL[1,2,4] * ψi1[-1,1,3] * Opri[-2,3,2,5] * ψi2'[4,5,-3]
+    return permute(EnvLL,(1,2),(3,))
+end
+
 function PushRight(EnvL::AbstractTensorMap{ComplexSpace,1,1},Opri1::AbstractTensorMap{ComplexSpace,2,2},Opri2::AbstractTensorMap{ComplexSpace,2,2})
     @tensor EnvLL[-1,-2] ≔ Opri1[-1,3,1,4] * Opri2'[2,4,-2,3] * EnvL[1,2]
     return permute(EnvLL,(1,),(2,))

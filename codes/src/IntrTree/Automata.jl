@@ -47,9 +47,9 @@ function AutomataMPO(Root::InteractionTreeNode,L::Int64=treeheight(Root) - 1)
                     localOpr = next_leaves[inds[3]].Opr.Opri
                     strength = next_leaves[inds[3]].Opr.strength
                     if isnan(strength)
-                        localOpr
+                        localOpr'
                     else
-                        localOpr*strength
+                        localOpr'*strength
                     end
                 end)
             end
@@ -59,9 +59,9 @@ function AutomataMPO(Root::InteractionTreeNode,L::Int64=treeheight(Root) - 1)
                     localOpr = next_roots[inds[3]].Opr.Opri
                     strength = next_roots[inds[3]].Opr.strength
                     if isnan(strength)
-                        localOpr
+                        localOpr'
                     else
-                        localOpr*strength
+                        localOpr'*strength
                     end
                 end)
             end

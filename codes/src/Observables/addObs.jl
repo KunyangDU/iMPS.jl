@@ -37,7 +37,9 @@ function addObs!(Obsf::ObserableForest{N},
     Z::Union{Nothing,AbstractTensorMap};ObsName = nothing
     ) where N
     isnothing(ObsName) && (ObsName = string(name...))
+
     ind = findfirst(map(x -> x.Opr.name == ObsName,Obsf.Roots.children))
+
     if isnothing(ind)
         _addBranch!(Obsf,ObsName)
         _addBranch!(Obsf.Roots.children[end],Tuple(site))
@@ -45,8 +47,8 @@ function addObs!(Obsf::ObserableForest{N},
     else
         indt = findfirst(map(x -> x.Opr.name == Tuple(site),Obsf.Roots.children[ind].children))
         if isnothing(indt)
-            _addBranch!(Obsf.Roots.children[end],Tuple(collect(site)))
-            addIntr!(Obsf.Roots.children[end].children[end],Opri,site,name,1,Z)
+            _addBranch!(Obsf.Roots.children[ind],Tuple(collect(site)))
+            addIntr!(Obsf.Roots.children[ind].children[end],Opri,site,name,1,Z)
         else
             @error "site already exist"
         end

@@ -105,4 +105,19 @@ function KOprMPO(Latt::AbstractLattice,Opr::Matrix,kv::Vector,sign::Int64;
 end
 
 
+################ NORMALIZED ###################
+
+function KOprMPO(Opri::AbstractTensorMap,
+    Latt::AbstractLattice,k::Vector,
+    name::String,
+    string::Union{Nothing,AbstractTensorMap})
+    tree = InteractionTree()
+    addIntr!(tree,Opri,Latt,k,name,1,string)
+    return AutomataMPO(tree,size(Latt))
+end
+
+
+
+
+
 

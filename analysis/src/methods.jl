@@ -42,3 +42,17 @@ end
 function Densen(a::Vector,N::Int64)
     return range(extrema(a)...,N)
 end
+
+
+function ObsMat1(lsObsDict::Vector{Dict},name::String)
+    lsdict = map(x -> x[name],lsObsDict)
+    Lt = length(lsdict)
+    LLatt = length(lsdict[1])
+    M = zeros(LLatt,Lt)
+
+    for it in 1:Lt
+        M[:,it] = [lsdict[it][(iLatt,)] for iLatt in 1:LLatt]
+    end
+
+    return M
+end

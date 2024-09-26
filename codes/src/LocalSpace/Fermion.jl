@@ -11,6 +11,14 @@ const Z = let
     JWstring2
 end
 
+const F = let 
+    FermionAnnihilation2
+end
+
+const Fdag = let 
+    FermionCreation2
+end
+
 const FFdag = let 
     FermionAnnihilation2,FermionCreation2
 end
@@ -69,6 +77,23 @@ const FermionCreationDown4 = TensorMap(diagm(1 => [1,0,1]),PhySpace,PhySpace)
 const Z = let 
     JWstring4
 end
+
+const Fup = let 
+    FermionCreationUp4'
+end
+
+const Fdagup = let 
+    FermionCreationUp4
+end
+
+const Fdown = let 
+    FermionCreationDown4'
+end
+
+const Fdagdown = let 
+    FermionCreationDown4
+end
+
 
 const FFdagUp = let 
     -FermionCreationUp4'*JWstring4,FermionCreationUp4

@@ -2,15 +2,21 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 6
+Lx = 16
 Ly = 1
 
 t = 1
 
-D_MPS = 2^5
+D_MPS = 2^6
 
-lsμ = load("../codes/examples/Free Fermion/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly).jld2")["lsμ"]
-Nμ = load("../codes/examples/Free Fermion/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)x$(Ly).jld2")["Nμ"]
+lsμ = load("../codes/examples/AUTO/Spinless Fermion/data/lsμ_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t).jld2")["lsμ"]
+
+Nμ = zeros(length(lsμ))
+for (μi,μ) in enumerate(lsμ)
+    ObsDict = load("../codes/examples/AUTO/Spinless Fermion/data/ObsDict_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ).jld2")["ObsDict"]
+    Nμ[μi] = sum([ObsDict["n"][(i,)] for i in 1:size(Latt)])
+end
+
 
 nμ = Nμ / (Lx*Ly)
 dμ = lsμ[2]-lsμ[1]
@@ -20,7 +26,7 @@ ind = 1:4:length(lsμ)
 χ = diff(nμ[ind]) ./ diff(lsμ[ind])
 centerμ = centralize(lsμ[ind])
 
-theoμ = range(extrema(lsμ)...,100)
+theoμ = range(-2,2,100)
 theonμ = @. (asin(theoμ/(2t))-asin(theoμ[1]/(2t))) / pi
 theoχ = @. (1/pi) / sqrt((2*t)^2 - theoμ^2)
 

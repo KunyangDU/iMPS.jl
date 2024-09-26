@@ -57,3 +57,26 @@ function addIntr!(Tree::InteractionTree,
 
     addIntr2!(Tree.Root.children[1],Opri,site,name,strength,Z)
 end
+
+############# k ####################
+
+function addIntr!(Root::InteractionTreeNode,
+    Opri::AbstractTensorMap,
+    Latt::AbstractLattice,k::Vector,
+    name::String,
+    strength::Number,
+    string::Union{Nothing,AbstractTensorMap})
+    L = size(Latt)
+    for site in 1:L
+        addIntr1!(Root,Opri,site,name,strength*exp(-1im*dot(k,coordinate(Latt,site))) / sqrt(L),string)
+    end
+end
+
+function addIntr!(Tree::InteractionTree,
+    Opri::AbstractTensorMap,
+    Latt::AbstractLattice,k::Vector,
+    name::String,
+    strength::Number,
+    string::Union{Nothing,AbstractTensorMap})
+    addIntr!(Tree.Root.children[1],Opri,Latt,k,name,strength,string)
+end

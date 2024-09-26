@@ -1,17 +1,23 @@
-using CairoMakie,JLD2,TensorKit,LaTeXStrings
+using CairoMakie,JLD2,TensorKit,LaTeXStrings,FiniteLattices
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 8
+Lx = 16
 Ly = 1
-U = 8
+U = 0
+
+Latt = YCSqua(Lx,Ly)
 
 t = 1
 
-D_MPS = 20
+D_MPS = 2^6
 
-lsμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2")["lsμ"]
-Nμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).jld2")["Nμ"]
+lsμ = load("../codes/examples/AUTO/Hubbard/data/lsμ_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_U=$(U).jld2")["lsμ"]
+Nμ = zeros(length(lsμ),2)
+for (μi,μ) in enumerate(lsμ)
+    ObsDict = load("../codes/examples/AUTO/Hubbard/data/ObsDict_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["ObsDict"]
+    Nμ[μi,1],Nμ[μi,2] = map(x -> sum([ObsDict[x][(i,)] for i in 1:size(Latt)]),("nup","ndown"))
+end
 
 nμ = Nμ / (Lx*Ly)
 dμ = lsμ[2]-lsμ[1]
@@ -45,18 +51,18 @@ scatterlines!(axχ,χ,centerμ)
 #xlims!(axχ,-0.1,1.2)
 
 # U = 0, theoretical curve
-#= ylims!(axχ,1.1.*extrema(lsμ)...)
+ylims!(axχ,1.1.*extrema(lsμ)...)
 theonμ = 0:0.01:2
 theoμ = @. 2t*sin(pi*theonμ/2-pi/2)
 theoχ = @. (2/pi) / sqrt((2*t)^2 - theoμ^2)
 lines!(axμ,theonμ,theoμ,color = :red,linewidth = 2.0)
-lines!(axχ,theoχ,theoμ,color = :red) =#
+lines!(axχ,theoχ,theoμ,color = :red)
 
 # U ≠ 0, band gap
-lines!(axμ,[0,2],[3*U/4,3*U/4],color = :red,alpha=0.2)
+#= lines!(axμ,[0,2],[3*U/4,3*U/4],color = :red,alpha=0.2)
 lines!(axμ,[0,2],[U/4,U/4],color = :red,alpha=0.2)
 text!(axμ,1.2, U/2, text = L"\Delta = U/2",
-align = (:left,:center),color = :red)
+align = (:left,:center),color = :red) =#
 
 
 
@@ -64,4 +70,4 @@ resize_to_layout!(fig)
 
 display(fig)
 
-save("Hubbard/figures/χ_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).pdf",fig)
+save("Hubbard/figures/χ__$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_U=$(U).pdf",fig)
