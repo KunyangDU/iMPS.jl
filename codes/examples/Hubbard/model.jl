@@ -1,98 +1,67 @@
-global F = diagm([1,-1,-1,1])
-global aup = diagm(-2 => [1,1])
-global adown = diagm(-1 => [1,0,1])
+LocalSpace = Spin2Fermion
 
+function Hamiltonian(Latt::AbstractLattice;t::Number=1,U::Number=0,μ::Number=0,returntree::Bool=false)
 
+    Root = InteractionTreeNode(IdentityOperator(0))
 
-function HamMPO(Latt::AbstractLattice;
-    t::Number=1,U::Number=0,μ::Number=0,
-    d::Int64=4)
-
-    # JW transformation in Pauli series with convention: |0⟩ -> |↓⟩, |1⟩ -> |↑⟩
-    # cup = aup, cdown = F*adown
-    # cup⁺ = aup⁺, cdown⁺ = adown⁺*F
-    # https://zhuanlan.zhihu.com/p/386386413
-    # https://itensor.org/docs.cgi?page=tutorials/fermions
-
-    maxd = FindMaxDist(neighbor(Latt))
-    D_MPO = 4*maxd + 2
-    HM = InitHamMatri(size(Latt),d,D_MPO)
-
-    # onsite μ
-    mode = zeros(D_MPO,D_MPO)
-    mode[end,1] = 1
-    μterm = -μ*(aup'*aup + adown'*adown)
-    HM[1] = HM[1] .+ kron(mode[end:end,:],μterm)
-    for i in eachindex(HM)[2:end-1]
-        HM[i] = HM[i] .+ kron(mode,μterm)
+    for i in 1:size(Latt)
+        addIntr!(Root,LocalSpace.n,i,"n",-μ,nothing)
+        addIntr!(Root,LocalSpace.nd,i,"nd",U,nothing)
     end
-    HM[end] = HM[end] .+ kron(mode[:,1:1],μterm)
-
-    # NN hopping
-
-    pairs = neighbor(Latt)
-    # 如果hopping参数不一样，那么每个参数对应的hopping应该多一个态
-    #for iLatt in size(Latt):-1:2
-    # up down updagg downdagg
-    for iLatt in size(Latt):-1:2
-        hps = FindPair(pairs,2,iLatt)
-        for (i,j) in hps
-            dist = j-i
-            HM[j][d .+ (1:d),1:d]   = aup
-            HM[j][2*d .+ (1:d),1:d] = F*adown
-            HM[j][3*d .+ (1:d),1:d] = aup'
-            HM[j][4*d .+ (1:d),1:d] = F*adown'
-
-            HM[i][end-d+1:end,(4*dist-3)*d .+ (1:d)] =  t*aup'*F
-            HM[i][end-d+1:end,(4*dist-2)*d .+ (1:d)] =  t*adown'
-            HM[i][end-d+1:end,(4*dist-1)*d .+ (1:d)] = -t*aup*F
-            HM[i][end-d+1:end,4*dist*d .+ (1:d)]     = -t*adown
-
-            for k in j-1:-1:i+1
-                step = j-k
-                #HM[k][(4*step-1)*d+1:(4*step+1)*d,(4*step-3)*d+1:(4*step-1)*d] = kron(diagm(ones(d)),F)
-                HM[k][(4*step+1)*d .+ (1:4*d),(4*step-3)*d .+ (1:4*d)] = kron(diagm(ones(4)),F)
-            end
-        end
-    end
-
-    # onsite U
-    mode = zeros(D_MPO,D_MPO)
-    mode[end,1] = 1
-    Uterm = U*aup'*aup*adown'*adown
-    HM[1] = HM[1] .+ kron(mode[end:end,:],Uterm)
-    for i in eachindex(HM)[2:end-1]
-        HM[i] = HM[i] .+ kron(mode,Uterm)
-    end
-    HM[end] = HM[end] .+ kron(mode[:,1:1],Uterm)
-
-    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef,size(Latt))
     
-    idt = ℂ^1
-    phys = (ℂ^d)'
-    bond = ℂ^D_MPO
-    MPO[1] = BlockMPO(reshape(HM[1],d,1,d,D_MPO),phys,idt,phys,bond)
-    for i in eachindex(MPO)[2:end-1]
-        MPO[i] = BlockMPO(reshape(HM[i],d,D_MPO,d,D_MPO),phys,bond,phys,bond)
+    for pair in neighbor(Latt)
+        addIntr!(Root,LocalSpace.FFdagUp,pair,("F↑","F⁺↑"),t,Spin2Fermion.Z)
+        addIntr!(Root,LocalSpace.FFdagDown,pair,("F↓","F⁺↓"),t,Spin2Fermion.Z)
+        addIntr!(Root,LocalSpace.FdagFUp,pair,("F⁺↑","F↑"),t,Spin2Fermion.Z)
+        addIntr!(Root,LocalSpace.FdagFDown,pair,("F⁺↓","F↓"),t,Spin2Fermion.Z)
     end
-    MPO[end] = BlockMPO(reshape(HM[end],d,D_MPO,d,1),phys,bond,phys,idt)
 
-    println("MPO constructed")
+    if returntree
+        return InteractionTree(Root)
+    else
+        return AutomataMPO(InteractionTree(Root),size(Latt))  
+    end
 
-    return MPO
+end
+
+function ParticleNumber(Latt::AbstractLattice,site::Int64)
+    Root = InteractionTreeNode(IdentityOperator(0))
+
+    addIntr!(Root,LocalSpace.n,site,"n",1,nothing)
+
+    return InteractionTree(Root)
+end
+
+function ParticleNumber(Latt::AbstractLattice)
+    Root = InteractionTreeNode(IdentityOperator(0))
+
+    LocalSpace = Spin2Fermion
+
+    for i in 1:size(Latt)
+        addIntr!(Root,LocalSpace.n,i,"n",1,nothing)
+    end
+
+    return InteractionTree(Root)   
+end
+
+function cupMPO(Latt::AbstractLattice,k::Vector)
+    MPOs = map(y -> [mpo[y] for mpo in let 
+    map(x -> compress(canonicalize(KOprMPO(x[1],Latt,k,x[2],LocalSpace.Z))),[(LocalSpace.Fup,"Fupk"),(LocalSpace.Fdagup,"Fupdagk")])
+    end ],1:2)
+    return MPOs
+end
+
+function cdownMPO(Latt::AbstractLattice,k::Vector)
+    MPOs = map(y -> [mpo[y] for mpo in let 
+    map(x -> compress(canonicalize(KOprMPO(x[1],Latt,k,x[2],LocalSpace.Z))),[(LocalSpace.Fdown,"Fdownk"),(LocalSpace.Fdagdown,"Fdowndagk")])
+    end ],1:2)
+    return MPOs
+end
+
+function cMPO(Latt::AbstractLattice,k::Vector)
+    cupMPOs = cupMPO(Latt,k)
+    cdownMPOs = cdownMPO(Latt,k)
+    return map(x -> [cupMPOs[x],cdownMPOs[x]],1:2)
 end
 
 
-function InitHamMatri(L::Int64,d::Int64,D_MPO::Int64)
-    HM = Vector{Matrix}(undef,L)
-
-    mode = kron(diagm(vcat([1],zeros(D_MPO-2),[1])),diagm(ones(d)))
-
-    HM[1] = mode[end-d+1:end,:]
-    HM[end] = mode[:,1:d]
-    for i in eachindex(HM)[2:end-1]
-        HM[i] = deepcopy(mode)
-    end
-
-    return HM
-end

@@ -2,20 +2,20 @@ using CairoMakie,JLD2,TensorKit,LaTeXStrings,FiniteLattices
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 6
+Lx = 8
 Ly = 1
 
 t = 1
-μ = 1.0
+μ = 2.0
 d = 2
 
-D_MPO = 2^5
+D_MPO = 20
 
-Latt = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
-lsβ2 = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ2_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ2"]
-ce = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/ce_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["ce"]
+Latt = YCSqua(Lx,Ly)
+lsβ2 = load("../codes/examples/Spinless Fermion/data/finite temp/lsβ2_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_t=$(t)_μ=$(μ).jld2")["lsβ2"]
+ce = load("../codes/examples/Spinless Fermion/data/finite temp/ce_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_t=$(t)_μ=$(μ).jld2")["ce"]
 
-width,height = 0.7 .* (600,450)
+width,height = 0.6 .* (600,300)
 
 fig = Figure()
 
@@ -42,5 +42,5 @@ resize_to_layout!(fig)
 display(fig)
 
 
-save("Free Fermion/figures/second order_$(Lx)x$(Ly)_D=$(D_MPO)_μ=$(μ).pdf",fig)
+save("Free Fermion/figures/second order_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_t=$(t)_μ=$(μ).pdf",fig)
 
