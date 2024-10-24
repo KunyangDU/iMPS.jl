@@ -9,16 +9,6 @@ t = 1
 μ = 2.0
 d = 2
 
-<<<<<<< HEAD
-D_MPO = 32
-Latt = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2")["Latt"]
-lsβ1 = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ1_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ1"]
-lsβ2 = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/lsβ2_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["lsβ2"]
-ni = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/ni_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["ni"]
-fi = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/fi_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["fi"]
-ui = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/ui_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["ui"]
-si = load("../codes/examples/Free Fermion/data/finite temp/$(Lx)x$(Ly)/si_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_μ=$(μ).jld2")["si"]
-=======
 D_MPO = 20
 
 Latt = YCSqua(Lx,Ly)
@@ -30,7 +20,6 @@ ui = load("../codes/examples/Spinless Fermion/data/finite temp/ui_$(Lx)x$(Ly)_D_
 si = load("../codes/examples/Spinless Fermion/data/finite temp/si_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_t=$(t)_μ=$(μ).jld2")["si"]
 
 lsβ2 = load("../codes/examples/Spinless Fermion/data/finite temp/lsβ2_$(Lx)x$(Ly)_D_MPO=$(D_MPO)_t=$(t)_μ=$(μ).jld2")["lsβ2"]
->>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e
 
 width,height = 0.7 .* (600,150)
 

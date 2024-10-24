@@ -19,46 +19,20 @@ function sweepTanTRG2(ρ::Vector,H::Vector,
 
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
-<<<<<<< HEAD:codes/src/tanTRG.jl
-#=             if βi != 1 && i==1
-                ρ[i:i+1],H[i:i+1],temptruncerr = RightUpdateTanTRG2(ρ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPO,LanczosLevel;τback=τ)
-            else
-                ρ[i:i+1],H[i:i+1],temptruncerr = RightUpdateTanTRG2(ρ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPO,LanczosLevel)
-            end =#
-            ρ[i:i+1],H[i:i+1],temptruncerr = RightUpdateTanTRG2(ρ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],-1im*τ,D_MPO,LanczosLevel)
-=======
             ρ[i:i+1],H[i:i+1],temptruncerr = RightUpdateTanTRG2(ρ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPO,LanczosLevel)
->>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e:codes/src/Algorithm/tanTRG.jl
             lsEnv[i+1] = PushRight(lsEnv[i],ρ[i],H[i],ρ[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end
-<<<<<<< HEAD:codes/src/tanTRG.jl
-        ρ[L] = Evolve(ρ[L],H[L:L],lsEnv[L],lsEnv[L+1],-1im*τ,LanczosLevel)
-=======
         ρ[L] = Evolve(ρ[L],H[L],lsEnv[L],lsEnv[L+1],τ,LanczosLevel)
->>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e:codes/src/Algorithm/tanTRG.jl
         println(">>>>>> finished >>>>>>")
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
-<<<<<<< HEAD:codes/src/tanTRG.jl
-#=             if i == L
-                ρ[i-1:i],H[i-1:i],temptruncerr = LeftUpdateTanTRG2(ρ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPO,LanczosLevel;τback=τ)
-            else
-                ρ[i-1:i],H[i-1:i],temptruncerr = LeftUpdateTanTRG2(ρ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPO,LanczosLevel)
-            end =#
-            ρ[i-1:i],H[i-1:i],temptruncerr = LeftUpdateTanTRG2(ρ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],-1im*τ,D_MPO,LanczosLevel)
-            lsEnv[i] = PushLeft(lsEnv[i+1],ρ[i],H[i],ρ[i])
-            totaltruncerror = max(totaltruncerror,temptruncerr)
-        end
-        ρ[1] = Evolve(ρ[1],H[1:1],lsEnv[1],lsEnv[2],-1im*τ,LanczosLevel)
-=======
             ρ[i-1:i],H[i-1:i],temptruncerr = LeftUpdateTanTRG2(ρ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPO,LanczosLevel)
             lsEnv[i] = PushLeft(lsEnv[i+1],ρ[i],H[i],ρ[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end
         ρ[1] = Evolve(ρ[1],H[1],lsEnv[1],lsEnv[2],τ,LanczosLevel)
->>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e:codes/src/Algorithm/tanTRG.jl
         println("<<<<<< finished <<<<<<")
 
         relativeerror = totaltruncerror / Trace(ρ)

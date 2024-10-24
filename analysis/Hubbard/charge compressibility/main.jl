@@ -5,11 +5,8 @@ include("../model.jl")
 Lx = 16
 Ly = 1
 U = 0
-<<<<<<< HEAD
-=======
 
 Latt = YCSqua(Lx,Ly)
->>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e
 
 t = 1
 
