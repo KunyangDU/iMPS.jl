@@ -90,27 +90,20 @@ function sweepTDVP2(ψ::Vector,H::Vector,
 
         println(">>>>>> begin >>>>>>")
         for i in 1:L-1
-            if iNt != 1 && i==1
-                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],2*τ,D_MPS,LanczosLevel;τback=τ)
-            else
-                ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS,LanczosLevel)
-            end
+            ψ[i:i+1],temptruncerr = RightUpdateTDVP2(ψ[i:i+1],H[i:i+1],lsEnv[i],lsEnv[i+2],τ,D_MPS,LanczosLevel)
             lsEnv[i+1] = PushRight(lsEnv[i],ψ[i],H[i])
-
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end
+        ψ[L] = Evolve(ψ[L],H[L:L],lsEnv[L],lsEnv[L+1],τ,LanczosLevel)
         println(">>>>>> finished >>>>>>")
 
         println("<<<<<< begin <<<<<<")
         for i in L:-1:2
-            if i == L
-                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],2*τ,D_MPS,LanczosLevel;τback=τ)
-            else
-                ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS,LanczosLevel)
-            end
+            ψ[i-1:i],temptruncerr = LeftUpdateTDVP2(ψ[i-1:i],H[i-1:i],lsEnv[i-1],lsEnv[i+1],τ,D_MPS,LanczosLevel)
             lsEnv[i] = PushLeft(lsEnv[i+1],ψ[i],H[i])
             totaltruncerror = max(totaltruncerror,temptruncerr)
         end
+        ψ[1] = Evolve(ψ[1],H[1:1],lsEnv[1],lsEnv[2],τ,LanczosLevel)
         println("<<<<<< finished <<<<<<")
 
         println("evolution $iNt finished, time consumed $(round(time()-start_time;digits=2))s, max truncation error = $(totaltruncerror)")

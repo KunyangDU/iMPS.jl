@@ -8,7 +8,7 @@ Ly = 1
 Latt = YCSqua(Lx,Ly)
 @save "examples/Hubbard/data/$(Lx)x$(Ly)/Latt_$(Lx)x$(Ly).jld2" Latt
 t = 1
-U = 8
+U = 0
 d = 4
 
 lsμ = (U/4 - 4):0.5:(3*U/4 + 4)

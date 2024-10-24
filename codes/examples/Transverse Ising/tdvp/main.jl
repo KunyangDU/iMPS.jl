@@ -3,20 +3,20 @@ using TensorKit,JLD2,BenchmarkTools
 include("../../../src/iMPS.jl")
 include("../model.jl")
 
-L = 11
+L = 21
 
 d = 2
 D_MPS = 2^3
 
 J = -1.0
 h = -0.5
-state = 6
+state = 11
 
 H = HamMPO(L;J=J,h=h)
 ψ = ImpurMPS(L,state)
 #ψ = FerroMPS(L,"AFM")
-t = 2.0*abs(J)
-Nt = 20
+t = 5.0*abs(J)
+Nt = 50
 LanczosLevel = 20
 
 lsψ,lst = sweepTDVP2(ψ,H,t,Nt,D_MPS,LanczosLevel;TruncErr = D_MPS)

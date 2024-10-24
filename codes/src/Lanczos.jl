@@ -140,16 +140,20 @@ function Evolve(
     EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
     τ::Number,
     LanczosLevel::Int64)
-    τHi = Vector{Union{AbstractTensorMap{ComplexSpace,1,3},AbstractTensorMap{ComplexSpace,2,2}}}(undef,length(Hi))
-    for (hi,h) in enumerate(Hi)
-        if typeof(h) <: AbstractTensorMap{ComplexSpace,1,3}
-            τHi[hi] = -τ*h
-        else
-            τHi[hi] = h
-        end
-    end
-    T, Q = Lanczos(τHi,EnvL,EnvR,LanczosLevel;q1 = localψ / norm(localψ))
-    A = sum(norm(localψ) * exp(T)[:,1] .* Q)
+    T, Q = Lanczos(Hi,EnvL,EnvR,LanczosLevel;q1 = localψ / norm(localψ))
+    A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
+    return A
+    #return A |> x -> x*norm(localψ)
+end
+
+function Evolve(
+    localψ::AbstractTensorMap,
+    Hi::Vector{AbstractTensorMap{ComplexSpace,2,2}},
+    EnvL::AbstractTensorMap,EnvR::AbstractTensorMap,
+    τ::Number,
+    LanczosLevel::Int64)
+    T, Q = Lanczos(Hi,EnvL,EnvR,LanczosLevel;q1 = localψ / norm(localψ))
+    A = sum(norm(localψ) * exp(-1im*τ*T)[:,1] .* Q)
     return A
     #return A |> x -> x*norm(localψ)
 end

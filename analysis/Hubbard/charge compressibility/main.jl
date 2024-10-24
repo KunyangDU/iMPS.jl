@@ -4,7 +4,7 @@ include("../model.jl")
 
 Lx = 8
 Ly = 1
-U = 8
+U = 0
 
 t = 1
 
@@ -38,25 +38,25 @@ scatterlines!(axμ,nμ[:,1] + nμ[:,2],lsμ)
 
 axχ = Axis(fig[1,2],
 xlabel = L"χ",
-xticks = 0:0.2:1,
+xticks = 0:0.6:1,
 width = 0.2*width,height = height)
 hideydecorations!(axχ,grid = false)
 scatterlines!(axχ,χ,centerμ)
-#xlims!(axχ,-0.1,1.2)
+xlims!(axχ,-0.1,1.2)
 
 # U = 0, theoretical curve
-#= ylims!(axχ,1.1.*extrema(lsμ)...)
+ylims!(axχ,1.1.*extrema(lsμ)...)
 theonμ = 0:0.01:2
 theoμ = @. 2t*sin(pi*theonμ/2-pi/2)
 theoχ = @. (2/pi) / sqrt((2*t)^2 - theoμ^2)
 lines!(axμ,theonμ,theoμ,color = :red,linewidth = 2.0)
-lines!(axχ,theoχ,theoμ,color = :red) =#
+lines!(axχ,theoχ,theoμ,color = :red)
 
 # U ≠ 0, band gap
-lines!(axμ,[0,2],[3*U/4,3*U/4],color = :red,alpha=0.2)
+#= lines!(axμ,[0,2],[3*U/4,3*U/4],color = :red,alpha=0.2)
 lines!(axμ,[0,2],[U/4,U/4],color = :red,alpha=0.2)
 text!(axμ,1.2, U/2, text = L"\Delta = U/2",
-align = (:left,:center),color = :red)
+align = (:left,:center),color = :red) =#
 
 
 

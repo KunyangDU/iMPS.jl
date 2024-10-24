@@ -11,7 +11,7 @@ function HamMPO(L::Int64;Jx::Number=1,Jy::Number=Jx,Jz::Number=Jx,hz::Number = 1
     d = 2
     D = 5
 
-    MPO = Vector{AbstractTensorMap}(undef, L)
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef, L)
 
     idt = ℂ^1
     phys = (ℂ^d)'
@@ -94,7 +94,7 @@ function HamMPO(Latt::AbstractLattice;
         end
     end
 
-    MPO = Vector{AbstractTensorMap}(undef,size(Latt))
+    MPO = Vector{AbstractTensorMap{ComplexSpace,2,2}}(undef,size(Latt))
     
     idt = ℂ^1
     phys = (ℂ^d)'
