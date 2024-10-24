@@ -1,17 +1,26 @@
-using CairoMakie,JLD2,TensorKit,LaTeXStrings
+using CairoMakie,JLD2,TensorKit,LaTeXStrings,FiniteLattices
 include("../../src/MPSanalysis.jl")
 include("../model.jl")
 
-Lx = 8
+Lx = 16
 Ly = 1
 U = 0
+<<<<<<< HEAD
+=======
+
+Latt = YCSqua(Lx,Ly)
+>>>>>>> 8ea8417fd317c4adb4f58a9cd6b4c299e7c2f40e
 
 t = 1
 
-D_MPS = 20
+D_MPS = 2^6
 
-lsμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/lsμ_$(Lx)x$(Ly)_U=$(U).jld2")["lsμ"]
-Nμ = load("../codes/examples/Hubbard/data/$(Lx)x$(Ly)/Nμ_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).jld2")["Nμ"]
+lsμ = load("../codes/examples/AUTO/Hubbard/data/lsμ_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_U=$(U).jld2")["lsμ"]
+Nμ = zeros(length(lsμ),2)
+for (μi,μ) in enumerate(lsμ)
+    ObsDict = load("../codes/examples/AUTO/Hubbard/data/ObsDict_$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_μ=$(μ)_U=$(U).jld2")["ObsDict"]
+    Nμ[μi,1],Nμ[μi,2] = map(x -> sum([ObsDict[x][(i,)] for i in 1:size(Latt)]),("nup","ndown"))
+end
 
 nμ = Nμ / (Lx*Ly)
 dμ = lsμ[2]-lsμ[1]
@@ -64,4 +73,4 @@ resize_to_layout!(fig)
 
 display(fig)
 
-save("Hubbard/figures/χ_D=$(D_MPS)_$(Lx)x$(Ly)_U=$(U).pdf",fig)
+save("Hubbard/figures/χ__$(Lx)x$(Ly)_D_MPS=$(D_MPS)_t=$(t)_U=$(U).pdf",fig)
