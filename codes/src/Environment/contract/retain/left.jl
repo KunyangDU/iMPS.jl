@@ -13,3 +13,8 @@ function contract(El::LeftCompositeEnvironmentTensor{1, 4, 3, 1}, A::MPSTensor{3
     @tensor tmp[-1;-2 -3] ≔ El.A[-1,-2,2,1] * A.A[1,2,-3]
     return LeftEnvironmentTensor(tmp)
 end
+
+function contract(El::LeftCompositeEnvironmentTensor{2, 4, 3, 1}, A::DenseMPOTensor{4})
+    @tensor tmp[-1;-2] ≔ El.A[-1,3,2,1] * A.A[2,1,-2,3]
+    return LeftEnvironmentTensor(tmp)
+end

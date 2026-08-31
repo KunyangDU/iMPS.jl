@@ -13,3 +13,8 @@ function contract(Er::RightCompositeEnvironmentTensor{2, 4, 3, 1}, A::MPSTensor{
     @tensor tmp[-1 -2;-3] ≔ A.A[-1,2,1] * Er.A[1,-2,-3,2]
     return RightEnvironmentTensor(tmp)
 end
+
+function contract(Er::RightCompositeEnvironmentTensor{2, 4, 3, 1}, A::DenseMPOTensor{4})
+    @tensor tmp[-1 ;-2] ≔ A.A[2,-1,1,3] * Er.A[1,3,-2,2]
+    return RightEnvironmentTensor(tmp)
+end

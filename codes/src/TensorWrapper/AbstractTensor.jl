@@ -70,6 +70,10 @@ mutable struct AdjointMPSTensor{R} <: AbstractMPSTensor
         return new{numind(A)}(A)
     end
 
+    function AdjointMPSTensor{r}(ts::AbstractTensorMap) where r
+        return new{r}(ts)
+    end
+
 end
 
 Base.adjoint(t::MPSTensor) = AdjointMPSTensor(copy(t.A'))

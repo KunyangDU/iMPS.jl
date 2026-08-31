@@ -10,7 +10,7 @@ function _sparse_actionb_sum(f::Function, validinds)
     end
 end
 
-function actionb(O::SparseProjectiveHamiltonian, obj::T) where T <: Union{MPSTensor{2},DenseMPOTensor{2},MPSTensor{3},DenseMPOTensor{4},CompositeMPSTensor{2,4},CompositeMPOTensor{2,6}}
+function actionb(O::SparseProjectiveHamiltonian, obj::T) where T <: Union{MPSTensor{2},DenseMPOTensor{2},MPSTensor{3},DenseMPOTensor{4},AdjointMPSTensor{3},AdjointMPOTensor{4},CompositeMPSTensor{2,4},CompositeMPOTensor{2,6}}
     x = _sparse_actionb_sum(O.validinds) do ind
         C, _ = _action(O, obj, ind)
         C
@@ -42,6 +42,12 @@ function _action(O::SparseProjectiveHamiltonian{1}, obj::T, ind::Tuple{Vector{In
     return tmp, localto
 end
 
+function _action(O::SparseProjectiveHamiltonian{1}, obj::T, ind::Tuple{Vector{Int64},Int64,Vector{Int64},Vector{Number},Vector{Number}}) where T <: Union{AdjointMPSTensor{3},AdjointMPOTensor{4}}
+    l_inds, j, r_inds, wl, wr = ind
+    tmp,localto = _action1(_wsum(O.EnvL, l_inds, wl), O.H[1][j], _wsum(O.EnvR, r_inds, wr), obj)
+    return tmp, localto
+end
+
 function _action(O::SparseProjectiveHamiltonian{2}, obj::T, ind::Tuple{Vector{Int64},Tuple{Int64,Int64},Vector{Int64},Vector{Number},Number,Vector{Number}}) where T <: Union{CompositeMPSTensor{2,4}, CompositeMPOTensor{2, 6}}
     l_inds, (j,k), r_inds, wl, w_mid, wr = ind
     tmp,localto = _action2(obj, _wsum(O.EnvL, l_inds, wl), O.H[1][j], O.H[2][k], _wsum(O.EnvR, r_inds, wr))
@@ -66,6 +72,12 @@ end
 function _action1(obj::T,El::LeftEnvironmentTensor{el},h::AbstractLocalOperator{h1,h2},Er::RightEnvironmentTensor{er}) where {el,h1,h2,er, T <: Union{DenseMPOTensor{4},MPSTensor{3}}}
     localto = TimerOutput()
     @timeit localto "_action1_1_$(el)_$(h1)$(h2)_$(er)" tmp = _action1_contract(obj,El,h,Er)
+    return T(tmp), localto
+end
+
+function _action1(El::LeftEnvironmentTensor{el},h::AbstractLocalOperator{h1,h2},Er::RightEnvironmentTensor{er},obj::T) where {el,h1,h2,er, T <: Union{AdjointMPOTensor{4},AdjointMPSTensor{3}}}
+    localto = TimerOutput()
+    @timeit localto "_action1_1_$(el)_$(h1)$(h2)_$(er)" tmp = _action1_contract(El,h,Er,obj)
     return T(tmp), localto
 end
 

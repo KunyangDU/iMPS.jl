@@ -33,7 +33,10 @@ _join_zero(El::LeftCompositeEnvironmentTensor{1,3,3,1}, Er::RightEnvironmentTens
     AdjointMPSTensor(zeros(TT, codomain(Er.A), reverse(domain(El.A))))
 _join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,3,3,1}, TT::Type{<:Number}) =
     AdjointMPSTensor(zeros(TT, codomain(Er.A), domain(El.A) ⊗ domain(Er.A)[2]))
-
+_join_zero(El::LeftCompositeEnvironmentTensor{2,4,3,1}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
+    AdjointMPOTensor(zeros(TT, codomain(Er.A) ⊗ codomain(El)[2], domain(El.A)))
+_join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,4,3,1}, TT::Type{<:Number}) =
+    AdjointMPOTensor(zeros(TT, codomain(Er.A) , domain(Er.A)[2] ⊗ domain(El.A)))
 # 按 composite 类型分发，直接从空间生成输出零张量（对标 FiniteMPS 的 zeros(codomain, domain)）。
 # 输出空间与下面 contract 的 @tensor 指标模式一一对应（含 codomain 反转 / 带出 domain 腿）。
 # —— 左环境在前（El=Left，Er=Right），与顶层 contract(SparseLeft, SparseRight) 语义一致
