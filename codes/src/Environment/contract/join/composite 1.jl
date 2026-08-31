@@ -19,3 +19,4 @@ function contract(El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTen
 end
 
 contract(El::LeftCompositeEnvironmentTensor{2, 4, 3, 1}, Er::RightCompositeEnvironmentTensor{2, 4, 3, 1}) = AdjointCompositeMPOTensor(@tensor tmp[-1 -2 -3;-4 -5 -6] ≔ El.A[1,-3,-5,-6] * Er.A[-1,-2,1,-4])
+contract(El::LeftCompositeEnvironmentTensor{1, 3, 3, 1}, Er::RightCompositeEnvironmentTensor{2, 3, 3, 1}) = AdjointCompositeMPSTensor(@tensor tmp[-1;-2 -3 -4] ≔ El.A[1,-3,-2] * Er.A[-1,1,-4])

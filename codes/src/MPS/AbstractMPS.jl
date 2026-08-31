@@ -96,6 +96,7 @@ isadjoint(::RefMPS) = true
 isref(::RefMPS) = true
 isref(::AbstractMPS) = false
 ref(::Type{DenseMPS{L}}) where L = RefMPS
+ref(::Type{DenseMPS{L,T}}) where {L,T} = RefMPS
 
 cleanup!(::RefMPS) = nothing
 

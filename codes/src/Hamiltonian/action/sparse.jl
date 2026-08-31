@@ -78,7 +78,7 @@ end
 # ====================== 2-site 分离输入（actionb(O, A1, A2)）======================
 # 两个 site 张量分开传入，不再先 composite。缩并逻辑直接内联（不依赖 Algebra/contract.jl）。
 
-function actionb(O::SparseProjectiveHamiltonian{2}, A1::MPSTensor{3}, A2::MPSTensor{3})
+function actionb(O::SparseProjectiveHamiltonian{2}, A1::T, A2::T) where T <: Union{DenseMPOTensor{4}, MPSTensor{3}}
     x = _sparse_actionb_sum(O.validinds) do ind
         l_inds, (j, k), r_inds, wl, w_mid, wr = ind
         tmp1 = contract(_wsum(O.EnvL, l_inds, wl), A1, O.H[1][j])
@@ -89,18 +89,7 @@ function actionb(O::SparseProjectiveHamiltonian{2}, A1::MPSTensor{3}, A2::MPSTen
     return x
 end
 
-function actionb(O::SparseProjectiveHamiltonian{2}, A1::DenseMPOTensor{4}, A2::DenseMPOTensor{4})
-    x = _sparse_actionb_sum(O.validinds) do ind
-        l_inds, (j, k), r_inds, wl, w_mid, wr = ind
-        tmp1 = contract(_wsum(O.EnvL, l_inds, wl), A1, O.H[1][j])
-        tmp2 = contract(A2, O.H[2][k], _wsum(O.EnvR, r_inds, wr))
-        w_mid * contract(tmp1, tmp2)
-    end
-    !iszero(O.E₀) && (x = axpy!(-O.E₀, composite(A1, A2), x))
-    return x
-end
-
-function actionb(O::SparseProjectiveHamiltonian{2}, A1::AdjointMPOTensor{4}, A2::AdjointMPOTensor{4})
+function actionb(O::SparseProjectiveHamiltonian{2}, A1::T, A2::T) where T <: Union{AdjointMPOTensor{4}, AdjointMPSTensor{3}}
     x = _sparse_actionb_sum(O.validinds) do ind
         l_inds, (j, k), r_inds, wl, w_mid, wr = ind
         tmp1 = contract(_wsum(O.EnvL, l_inds, wl), O.H[1][j], A1)

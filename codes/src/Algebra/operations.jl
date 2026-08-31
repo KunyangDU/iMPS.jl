@@ -42,12 +42,12 @@ end
 
 function _scalar(env::Environment{2})
     @assert (site = env.center[1]) == env.center[2]
-    return inner(env.layer[2][site], action(proj1(env, site), env.layer[1][site]))
+    return inner(env.layer[2][site], actionb(proj1(env, site), env.layer[1][site]))
 end
 
 function _scalar(env::Environment{3})
     @assert (site = env.center[1]) == env.center[2]
-    return inner(env.layer[3][site], action(proj1(env, site), env.layer[1][site]))
+    return inner(env.layer[3][site], actionb(proj1(env, site), env.layer[1][site]))
 end
 
 
