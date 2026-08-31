@@ -29,59 +29,64 @@ end
 # 函数屏障：按具体 composite 类型构造每 worker 零容器（Vector{T} 具体，累加类型稳定）
 _join_zerovectors(El::L, Er::R, TT::Type{<:Number}) where {L, R} = [_join_zero(El, Er, TT) for _ in 1:get_nworker()]
 
+_join_zero(El::LeftCompositeEnvironmentTensor{1,3,3,1}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
+    AdjointMPSTensor(zeros(TT, codomain(Er.A), reverse(domain(El.A))))
+_join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,3,3,1}, TT::Type{<:Number}) =
+    AdjointMPSTensor(zeros(TT, codomain(Er.A), domain(El.A) ⊗ domain(Er.A)[2]))
+
 # 按 composite 类型分发，直接从空间生成输出零张量（对标 FiniteMPS 的 zeros(codomain, domain)）。
 # 输出空间与下面 contract 的 @tensor 指标模式一一对应（含 codomain 反转 / 带出 domain 腿）。
 # —— 左环境在前（El=Left，Er=Right），与顶层 contract(SparseLeft, SparseRight) 语义一致
-_join_zero(El::LeftCompositeEnvironmentTensor{2,3}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
-    MPSTensor(zeros(TT, codomain(El.A), domain(Er.A)))
-_join_zero(El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{3}, TT::Type{<:Number}) =
-    MPSTensor(zeros(TT, codomain(El.A), domain(Er.A)))
-_join_zero(El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
-    DenseMPOTensor(zeros(TT, reverse(codomain(El.A)), domain(Er.A) ⊗ domain(El.A)[2]))
-_join_zero(El::LeftCompositeEnvironmentTensor{2,5}, Er::RightEnvironmentTensor{3}, TT::Type{<:Number}) =
-    DenseMPOTensor(zeros(TT, reverse(codomain(El.A)), domain(Er.A) ⊗ domain(El.A)[3]))
-_join_zero(El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{1,4}, TT::Type{<:Number}) =
-    MPSTensor(zeros(TT, codomain(El.A) ⊗ codomain(Er.A)[3], domain(Er.A)))
-_join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{1,3}, TT::Type{<:Number}) =
-    MPSTensor(zeros(TT, codomain(El.A) ⊗ codomain(Er.A)[2], domain(Er.A)))
-_join_zero(El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{2,5}, TT::Type{<:Number}) =
-    DenseMPOTensor(zeros(TT, codomain(Er.A)[3] ⊗ codomain(El.A), domain(Er.A)))
-_join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,4}, TT::Type{<:Number}) =
-    DenseMPOTensor(zeros(TT, codomain(Er.A)[2] ⊗ codomain(El.A), domain(Er.A)))
+# _join_zero(El::LeftCompositeEnvironmentTensor{2,3}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
+#     MPSTensor(zeros(TT, codomain(El.A), domain(Er.A)))
+# _join_zero(El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{3}, TT::Type{<:Number}) =
+#     MPSTensor(zeros(TT, codomain(El.A), domain(Er.A)))
+# _join_zero(El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{2}, TT::Type{<:Number}) =
+#     DenseMPOTensor(zeros(TT, reverse(codomain(El.A)), domain(Er.A) ⊗ domain(El.A)[2]))
+# _join_zero(El::LeftCompositeEnvironmentTensor{2,5}, Er::RightEnvironmentTensor{3}, TT::Type{<:Number}) =
+#     DenseMPOTensor(zeros(TT, reverse(codomain(El.A)), domain(Er.A) ⊗ domain(El.A)[3]))
+# _join_zero(El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{1,4}, TT::Type{<:Number}) =
+#     MPSTensor(zeros(TT, codomain(El.A) ⊗ codomain(Er.A)[3], domain(Er.A)))
+# _join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{1,3}, TT::Type{<:Number}) =
+#     MPSTensor(zeros(TT, codomain(El.A) ⊗ codomain(Er.A)[2], domain(Er.A)))
+# _join_zero(El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{2,5}, TT::Type{<:Number}) =
+#     DenseMPOTensor(zeros(TT, codomain(Er.A)[3] ⊗ codomain(El.A), domain(Er.A)))
+# _join_zero(El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,4}, TT::Type{<:Number}) =
+#     DenseMPOTensor(zeros(TT, codomain(Er.A)[2] ⊗ codomain(El.A), domain(Er.A)))
 
 # 就地融合累加：@tensor acc.A += El.A*Er.A 对任意收缩（含多索引）成立，等价 mul!(acc,El,Er,1,1)。
 # 每 worker 预分配的零容器作为累加目标，全项原地累加，不物化 contract(El,Er) 中间量。
 # —— 左环境在前（El=Left，Er=Right），与顶层 contract(SparseLeft, SparseRight) 语义一致
-function _accumulate_join!(acc::MPSTensor{3}, El::LeftCompositeEnvironmentTensor{2,3}, Er::RightEnvironmentTensor{2})
-    @tensor acc.A[-1,-2;-3] += El.A[-1,-2,1] * Er.A[1,-3]
-    return acc
-end
-function _accumulate_join!(acc::MPSTensor{3}, El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{3})
-    @tensor acc.A[-1,-2;-3] += El.A[-1,-2,2,1] * Er.A[1,2,-3]
-    return acc
-end
-function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{2})
-    @tensor acc.A[-1,-2;-3,-4] += El.A[-2,-1,1,-4] * Er.A[1,-3]
-    return acc
-end
-function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftCompositeEnvironmentTensor{2,5}, Er::RightEnvironmentTensor{3})
-    @tensor acc.A[-1,-2;-3,-4] += El.A[-2,-1,2,1,-4] * Er.A[1,2,-3]
-    return acc
-end
-function _accumulate_join!(acc::MPSTensor{3}, El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{1,4})
-    @tensor acc.A[-1,-2;-3] += El.A[-1,2,1] * Er.A[1,2,-2,-3]
-    return acc
-end
-function _accumulate_join!(acc::MPSTensor{3}, El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{1,3})
-    @tensor acc.A[-1,-2;-3] += El.A[-1,1] * Er.A[1,-2,-3]
-    return acc
-end
-function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{2,5})
-    @tensor acc.A[-1,-2;-3,-4] += El.A[-2,2,1] * Er.A[1,2,-1,-3,-4]
-    return acc
-end
-function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,4})
-    @tensor acc.A[-1,-2;-3,-4] += El.A[-2,1] * Er.A[1,-1,-3,-4]
-    return acc
-end
+# function _accumulate_join!(acc::MPSTensor{3}, El::LeftCompositeEnvironmentTensor{2,3}, Er::RightEnvironmentTensor{2})
+#     @tensor acc.A[-1,-2;-3] += El.A[-1,-2,1] * Er.A[1,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::MPSTensor{3}, El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{3})
+#     @tensor acc.A[-1,-2;-3] += El.A[-1,-2,2,1] * Er.A[1,2,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftCompositeEnvironmentTensor{2,4}, Er::RightEnvironmentTensor{2})
+#     @tensor acc.A[-1,-2;-3,-4] += El.A[-2,-1,1,-4] * Er.A[1,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftCompositeEnvironmentTensor{2,5}, Er::RightEnvironmentTensor{3})
+#     @tensor acc.A[-1,-2;-3,-4] += El.A[-2,-1,2,1,-4] * Er.A[1,2,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::MPSTensor{3}, El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{1,4})
+#     @tensor acc.A[-1,-2;-3] += El.A[-1,2,1] * Er.A[1,2,-2,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::MPSTensor{3}, El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{1,3})
+#     @tensor acc.A[-1,-2;-3] += El.A[-1,1] * Er.A[1,-2,-3]
+#     return acc
+# end
+# function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftEnvironmentTensor{3}, Er::RightCompositeEnvironmentTensor{2,5})
+#     @tensor acc.A[-1,-2;-3,-4] += El.A[-2,2,1] * Er.A[1,2,-1,-3,-4]
+#     return acc
+# end
+# function _accumulate_join!(acc::DenseMPOTensor{4}, El::LeftEnvironmentTensor{2}, Er::RightCompositeEnvironmentTensor{2,4})
+#     @tensor acc.A[-1,-2;-3,-4] += El.A[-2,1] * Er.A[1,-1,-3,-4]
+#     return acc
+# end
 _accumulate_join!(acc, El, Er) = axpy!(1, contract(El, Er), acc)

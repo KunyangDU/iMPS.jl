@@ -53,7 +53,7 @@ function _cbetensor(func,A::MPSTensor{3}, D_f::Int64, direction::AbstractDirecti
         tmp = MPSTensor(func,_expanddim(fuse((cdm[2] ⊗ dm)),D_f) ⊗ cdm[2],dm)
     end
     normalize!(tmp)
-    return tmp'
+    return tmp
 end
 
 function _cbetensor(func,A::DenseMPOTensor{4}, D_f::Int64,direction::AbstractDirection)
@@ -64,7 +64,7 @@ function _cbetensor(func,A::DenseMPOTensor{4}, D_f::Int64,direction::AbstractDir
         tmp = DenseMPOTensor(func,cdm[1]⊗(_expanddim(fuse(dm⊗cdm[1]),D_f)),dm)
     end
     normalize!(tmp)
-    return tmp'
+    return tmp
 end
 
 # function _cbedsum(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)

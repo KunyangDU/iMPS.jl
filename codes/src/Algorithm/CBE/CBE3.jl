@@ -4,7 +4,8 @@ function CBE!(env::Environment{3}, alg::CBEalgo{randSVD,struc,1}, info::CBEinfo{
     to = TimerOutput()
     site = env.center[1]
 
-    tL₀,tR₀ = env.layer[1][site:site+1]
+    tL₀, tR₀ = env.layer[1][site:site+1]
+    bL₀, bR₀ = env.layer[3][site:site+1]
     EnvL = env.envs[site]
     EnvR = env.envs[site + 2]
     hl,hr = env.layer[2][site:site+1]
@@ -14,11 +15,10 @@ function CBE!(env::Environment{3}, alg::CBEalgo{randSVD,struc,1}, info::CBEinfo{
     D_i ≥ D_f && return to
 
     @timeit to "leftorth" tL,Λ = leftorth(tL₀)
-    # @timeit to "left orthogonalize" Lorth = orthogonalize!(hl,tL,tL,EnvL)
-    @timeit to "left orthogonalize" Lorth = orthogonalize!(hl,tL₀,tL,EnvL)
-    @timeit to "right orthogonalize" Rorth = orthogonalize!(hr,tR₀,tR₀,EnvR)
+    @timeit to "left orthogonalize" Lorth = orthogonalize!(tL,hl,bL₀,EnvL)
+    @timeit to "right orthogonalize" Rorth = orthogonalize!(tR₀,hr,bR₀,EnvR)
 
-    CBEenv = CBEenvironment(tL₀,tR₀,tL,nothing,D_i,D_f,Λ,Lorth,Rorth,struc == DSA ? hl.right : nothing)
+    CBEenv = CBEenvironment(tL₀,tR₀,tL,tR₀,D_i,D_f,Λ,Lorth,Rorth,struc == DSA ? hl.right : nothing)
 
     @timeit to "CBE!" localto = CBE!(CBEenv,alg,info)
 
@@ -35,6 +35,7 @@ function CBE!(env::Environment{3}, alg::CBEalgo{randSVD,struc,1}, info::CBEinfo{
     site = env.center[1]
 
     tL₀,tR₀ = env.layer[1][site-1:site]
+    bL₀, bR₀ = env.layer[3][site-1:site]
     EnvL = env.envs[site - 1]
     EnvR = env.envs[site + 1]
     hl,hr = env.layer[2][site-1:site]
@@ -44,9 +45,8 @@ function CBE!(env::Environment{3}, alg::CBEalgo{randSVD,struc,1}, info::CBEinfo{
     D_i ≥ D_f && return to
 
     @timeit to "rightorth" Λ,tR = rightorth(tR₀)
-    @timeit to "left orthogonalize" Lorth = orthogonalize!(hl,tL₀,tL₀,EnvL)
-    # @timeit to "right orthogonalize" Rorth = orthogonalize!(hr,tR,tR,EnvR)
-    @timeit to "right orthogonalize" Rorth = orthogonalize!(hr,tR₀,tR,EnvR)
+    @timeit to "left orthogonalize" Lorth = orthogonalize!(tL₀,hl,bL₀,EnvL)
+    @timeit to "right orthogonalize" Rorth = orthogonalize!(tR,hr,bR₀,EnvR)
 
     CBEenv = CBEenvironment(tL₀,tR₀,nothing,tR,D_i,D_f,Λ,Lorth,Rorth,struc == DSA ? hr.left : nothing)
 

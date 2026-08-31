@@ -4,9 +4,9 @@ function densify(O::SparseMPO{L};kwargs...) where L
     O′ = IdDenseMPO(ps, repeat([trivial(ps),], L+1))
     canonicalize!(O′,1)
     trunc = get(kwargs, :trunc, truncdim(maximum(length.(O[:]))))
-    # algo = Algebraalgo(DoubleSite(),NoAlgorithm(),trunc,3,1e-12,false,false)
-    algo = Algebraalgo(SingleSite(),CBEalgo(dynamicSVD(1.2,2),DSA(),3,_getdim(trunc)),trunc,3,1e-12,false,false)
-    mul!(O′,O′,O,1,algo)
+    algo = Algebraalgo(DoubleSite(),NoAlgorithm(),trunc,3,1e-12,false,false)
+    # algo = Algebraalgo(SingleSite(),CBEalgo(dynamicSVD(1.2,2),DSA(),3,_getdim(trunc)),trunc,3,1e-12,false,false)
+    mul!(O′,deepcopy(O′),O,1,algo)
     return O′
 end
 

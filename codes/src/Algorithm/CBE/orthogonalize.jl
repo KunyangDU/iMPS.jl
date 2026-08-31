@@ -72,7 +72,7 @@ function _merge_envs!(x::Vector{Any}, y::Vector{Any})
     return x
 end
 
-function orthogonalize!(H::SparseMPOTensor,B::T,B′::T,EnvR::SparseRightEnvironmentTensor) where T <: Union{DenseMPOTensor{4},MPSTensor{3}}
+function orthogonalize!(B::T,H::SparseMPOTensor,B′::T′,EnvR::SparseRightEnvironmentTensor) where T <: Union{DenseMPOTensor{4}, MPSTensor{3}} where T′ <: Union{AdjointMPOTensor{4}, AdjointMPSTensor{3}}
     # 算子优先（元任务 = _validind 的每个算符 j）：预求和右环境 → 一次缩并 → 按左键散射。
     # 旧 bond-first 版本同一算符的每个左键都重复缩并一次；这里每算符只缩并一次，任务数 = 算符数（≫ 键数）。
     # 散射用 per-worker 私有输出向量 + 末步归并，无嵌套循环、无 barrier、不物化整份 tmpC。
@@ -81,7 +81,7 @@ function orthogonalize!(H::SparseMPOTensor,B::T,B′::T,EnvR::SparseRightEnviron
     merged = threaded_reduce!(eachindex(validind), accs; combine! = _merge_envs!) do k, acc, _
         l_inds, j, r_inds, wl, wr = validind[k]
         weighted_env = _wsum(EnvR, r_inds, wr)
-        C = _orth_sub!(contract(B, H[j], weighted_env), B′)
+        C = _orth_sub!(contract(H[j], B′, weighted_env), B)
         for (idx, i) in enumerate(l_inds)
             acc[i] = axpy!(wl[idx], C, acc[i])
         end
@@ -90,14 +90,14 @@ function orthogonalize!(H::SparseMPOTensor,B::T,B′::T,EnvR::SparseRightEnviron
     return SparseRightEnvironmentTensor(convert(Vector{RightCompositeEnvironmentTensor}, merged))
 end
 
-function orthogonalize!(H::SparseMPOTensor,A::T,A′::T,EnvL::SparseLeftEnvironmentTensor) where T <: Union{DenseMPOTensor{4},MPSTensor{3}}
+function orthogonalize!(A::T,H::SparseMPOTensor,A′::T′,EnvL::SparseLeftEnvironmentTensor) where T <: Union{DenseMPOTensor{4},MPSTensor{3}} where T′ <: Union{AdjointMPOTensor{4}, AdjointMPSTensor{3}}
     # 算子优先（pushright 镜像）：预求和左环境 → 一次缩并 → 按右键散射，同样每算符只缩并一次。
     validind = _validind(H)
     accs = [Vector{Any}(nothing, length(H.right.rev)) for _ in 1:get_nworker()]
     merged = threaded_reduce!(eachindex(validind), accs; combine! = _merge_envs!) do k, acc, _
         l_inds, j, r_inds, wl, wr = validind[k]
         weighted_env = _wsum(EnvL, l_inds, wl)
-        C = _orth_sub!(contract(weighted_env, A, H[j]), A′)
+        C = _orth_sub!(contract(weighted_env, H[j], A′), A)
         for (idx, i) in enumerate(r_inds)
             acc[i] = axpy!(wr[idx], C, acc[i])
         end
@@ -119,6 +119,6 @@ function orthogonalize!(Q::T,A::T,direction::AbstractDirection;tol::Number=1e-4)
     return Q
 end
 
-orthogonalize!(H::T,A::T′,A′::T′,EnvL::DenseLeftEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T′ <: Union{DenseMPOTensor{4}, MPSTensor{3}}} = contract(EnvL.A,A,H) |> x -> x - contract(x,A′)
-orthogonalize!(H::T,B::T′,B′::T′,EnvR::DenseRightEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T′ <: Union{DenseMPOTensor{4}, MPSTensor{3}}} = contract(B,H,EnvR.A) |> x -> x - contract(x,B′)
+orthogonalize!(A::T₁,H::T,A′::T₂,EnvL::DenseLeftEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T₁ <: Union{DenseMPOTensor{4}, MPSTensor{3}}, T₂ <: Union{AdjointMPOTensor{4},AdjointMPSTensor{3}}} = _orth_sub!(contract(EnvL.A, H, A′), A)
+orthogonalize!(B::T₁,H::T,B′::T₂,EnvR::DenseRightEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T₁ <: Union{DenseMPOTensor{4}, MPSTensor{3}}, T₂ <: Union{AdjointMPOTensor{4},AdjointMPSTensor{3}}} = _orth_sub!(contract(H, B′, EnvR.A), B)
 

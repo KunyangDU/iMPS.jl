@@ -34,14 +34,10 @@ function randSVD!(env::CBEenvironment, alg::CBEalgo,info::CBEinfo{L2R})
     @timeit localto "splice Q'" L_trunc = splice(env.Lorth,Q')
     @timeit localto "contract_Lt*RO" obj = contract(L_trunc, env.Rorth, env.lm)
     # @timeit localto "pre-orthogonalize" orthogonalize!(obj,tR₀,:right)
-    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(obj;direction = :left,trunc = truncdim(env.D_f - env.D_i))
+    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(obj';direction = :left,trunc = truncdim(env.D_f - env.D_i))
     @timeit localto "after-orthogonalize" orthogonalize!(tR′,env.tR₀,L2R())
 
-    # @timeit localto "direct-sum" env.tR = _cbedsum(tR′,env.tR₀,L2R())
-    # @timeit localto "splice" env.tL = splice(env.tL₀,env.tR₀,env.tR,L2R())
-    
     @timeit localto "oplus" begin 
-        # rmul!(tR′,0.0)
         tL′, tR′ = _rexpand(env.tL₀, tR′)
         env.tL = _roplus(env.tL₀, tL′)
         env.tR = _loplus(env.tR₀, tR′)
@@ -69,14 +65,10 @@ function randSVD!(env::CBEenvironment,alg::CBEalgo,info::CBEinfo{R2L})
     @timeit localto "splice Q'" R_trunc = splice(env.Rorth,Q')
     @timeit localto "contract_LO*Rt" obj = contract(env.Lorth, R_trunc, env.lm)
     # @timeit localto "pre-orthogonalize" orthogonalize!(obj,tL₀,:left)
-    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(obj;direction = :right,trunc = truncdim(env.D_f - env.D_i))
+    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(obj';direction = :right,trunc = truncdim(env.D_f - env.D_i))
     @timeit localto "after-orthogonalize" orthogonalize!(tL′,env.tL₀,R2L())
 
-    # @timeit localto "direct-sum" env.tL = _cbedsum(tL′,env.tL₀,R2L())
-    # @timeit localto "splice" env.tR = splice(env.tL₀,env.tR₀,env.tL,R2L())
-
     @timeit localto "oplus" begin 
-        # rmul!(tL′,0.0)
         tL′, tR′ = _lexpand(tL′, env.tR₀)
         env.tL = _roplus(env.tL₀, tL′)
         env.tR = _loplus(env.tR₀, tR′)
