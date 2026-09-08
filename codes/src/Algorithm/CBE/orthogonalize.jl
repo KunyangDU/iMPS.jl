@@ -20,7 +20,7 @@ function orthogonalize!(B::T,H::SparseMPOTensor,B′::T′,EnvR::SparseRightEnvi
     merged = threaded_reduce!(eachindex(validind), accs; combine! = _merge_envs!) do k, acc, _
         l_inds, j, r_inds, wl, wr = validind[k]
         weighted_env = _wsum(EnvR, r_inds, wr)
-        C = _orth_sub!(contract(H[j], B′, weighted_env), B)
+        C = rorth!(contract(H[j], B′, weighted_env), B)
         for (idx, i) in enumerate(l_inds)
             acc[i] = axpy!(wl[idx], C, acc[i])
         end
@@ -36,7 +36,7 @@ function orthogonalize!(A::T,H::SparseMPOTensor,A′::T′,EnvL::SparseLeftEnvir
     merged = threaded_reduce!(eachindex(validind), accs; combine! = _merge_envs!) do k, acc, _
         l_inds, j, r_inds, wl, wr = validind[k]
         weighted_env = _wsum(EnvL, l_inds, wl)
-        C = _orth_sub!(contract(weighted_env, H[j], A′), A)
+        C = lorth!(contract(weighted_env, H[j], A′), A)
         for (idx, i) in enumerate(r_inds)
             acc[i] = axpy!(wr[idx], C, acc[i])
         end

@@ -105,24 +105,3 @@ function SETTN!(β::Number,H::SparseMPO{L},Hn::DenseMPO,ρ::DenseMPO,order::Int6
     return to,info
 end
 
-# @timeit to "mul!" ~,multo,minfo = mul!(Hn,deepcopy(Hn),H; trunc = Alg.trunc, tol = Alg.tol)
-# @timeit to "mul!" ~,multo,minfo = mul!(Hn,deepcopy(Hn),H,1,0,Alg.alg)
-# @timeit to "axpy!" ~,axpyto,ainfo = axpby!((-β) ^ order / factorial(order),Hn ,1,ρ,Alg.alg)
-
-# function SETTN!(β::Number,H::SparseMPO{L},Hn::DenseMPO,ρ::DenseMPO,order::Int64,Alg::SETTNalgo{DoubleSite}) where L
-#     to = TimerOutput()
-#     info = SETTNsweepinfo()
-#     @timeit to "mul!" ~,multo,minfo = mul!(Hn,deepcopy(Hn),H; trunc = Alg.trunc, tol = Alg.tol)
-#     @timeit to "axpy!" ~,axpyto,ainfo = axpy!((-β) ^ order / factorial(order),Hn ,ρ ; trunc = Alg.trunc, tol = Alg.tol)
-#     merge!(to,multo, tree_point = ["mul!"])
-#     merge!(to,axpyto, tree_point = ["axpy!"])
-#     @timeit to "calculate lnZ" info.lnZ = log(tr(ρ))
-#     # F = - log(tr(ρ)) / 2 / β
-#     merge!(info.bond,minfo.bond)
-#     merge!(info.bond,ainfo.bond)
-#     info.err = minfo.err
-#     return to,info
-# end
-
-
-

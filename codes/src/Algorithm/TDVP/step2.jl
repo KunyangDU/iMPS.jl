@@ -10,6 +10,7 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{DoubleSite},info::TDVPsweepin
 
         Norm = normalize!(tmp)
         @timeit localto "SVD" Env.layer[1][site], Env.layer[1][site+1], localinfo.err, bi = tsvd(tmp; direction=:right,trunc = Alg.trunc)
+        normalize!(Env.layer[1][site+1])
         rmul!(Env.layer[1][site+1],Norm)
 
         @timeit localto "canonicalize!" canonicalize!(Env,site+1)
@@ -46,6 +47,7 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{DoubleSite},info::TDVPsweepin
 
         Norm = normalize!(tmp)
         @timeit localto "SVD" Env.layer[1][site-1], Env.layer[1][site], localinfo.err, bi = tsvd(tmp; direction=:left,trunc = Alg.trunc)
+        normalize!(Env.layer[1][site-1])
         rmul!(Env.layer[1][site-1],Norm)
 
         @timeit localto "canonicalize!" canonicalize!(Env,site-1)

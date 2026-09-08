@@ -19,6 +19,7 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{SingleSite,alg},info::TDVPswe
 
         Norm = normalize!(Env.layer[1][site])
         @timeit localto "svd" Env.layer[1][site],tr,localinfo.err,bondinfo = tsvd(Env.layer[1][site];direction=:right,trunc = Alg.trunc)
+        normalize!(tr)
         rmul!(tr,Norm)
 
         EnvR = Env.envs[site+1]
@@ -66,6 +67,7 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{SingleSite,alg},info::TDVPswe
 
         Norm = normalize!(Env.layer[1][site])
         @timeit localto "svd" tl,Env.layer[1][site],localinfo.err,bondinfo = tsvd(Env.layer[1][site];direction=:left,trunc = Alg.trunc)
+        normalize!(tl)
         rmul!(tl,Norm)
 
         EnvL = Env.envs[site]

@@ -11,11 +11,25 @@ function actionb(O::DenseProjectiveHamiltonian{2,1}, obj::DenseMPOTensor{4})
     return x
 end
 
+function actionb(O::DenseProjectiveHamiltonian{2,1}, obj::AdjointMPOTensor{4})
+    @tensor x[-1,-2;-3,-4] ≔ O.EnvL.A.A[1,-4] * obj.A[2,-2,-3,1] * O.EnvR.A.A[-1,2]
+    x = AdjointMPOTensor(x)
+    !iszero(O.E₀) && (x = axpy!(-O.E₀, obj, x))
+    return x
+end
+
 # ---------- {2,2} 两体环境纯投影 ----------
 
 function actionb(O::DenseProjectiveHamiltonian{2,2}, obj::CompositeMPOTensor{2,6})
     @tensor x[-1,-2,-3;-4,-5,-6] ≔ O.EnvL.A.A[-3,1] * obj.A[-1,-2,1,2,-5,-6] * O.EnvR.A.A[2,-4]
     x = CompositeMPOTensor(x)
+    !iszero(O.E₀) && (x = axpy!(-O.E₀, obj, x))
+    return x
+end
+
+function actionb(O::DenseProjectiveHamiltonian{2,2}, obj::AdjointCompositeMPOTensor{2,6})
+    @tensor x[-1,-2,-3;-4,-5,-6] ≔ O.EnvL.A.A[1,-6] * obj.A[2,-2,-3,-4,-5,1] * O.EnvR.A.A[-1,2]
+    x = AdjointCompositeMPOTensor(x)
     !iszero(O.E₀) && (x = axpy!(-O.E₀, obj, x))
     return x
 end
@@ -63,11 +77,20 @@ end
 
 # ---------- 2-site 分离输入（actionb(O, A1, A2)）----------
 
-function actionb(O::DenseProjectiveHamiltonian{2,2}, A1::DenseMPOTensor{4}, A2::DenseMPOTensor{4})
-    @tensor x[-1,-2,-3;-4,-5,-6] ≔ O.EnvL.A.A[-3,1] * A1.A[-2,1,2,-6] * A2.A[-1,2,3,-5] * O.EnvR.A.A[3,-4]
-    x = CompositeMPOTensor(x)
+function actionb(O::DenseProjectiveHamiltonian{2,2}, A1::T, A2::T) where T <: Union{DenseMPOTensor{4}, AdjointMPOTensor{4}}
+    x = _actionb2_split(O.EnvL.A, A1, A2, O.EnvR.A)
     !iszero(O.E₀) && (x = axpy!(-O.E₀, composite(A1, A2), x))
     return x
+end
+
+function _actionb2_split(El::LeftEnvironmentTensor{2}, A1::DenseMPOTensor{4}, A2::DenseMPOTensor{4}, Er::RightEnvironmentTensor{2})
+    @tensor x[-1,-2,-3;-4,-5,-6] ≔ El.A[-3,1] * A1.A[-2,1,2,-6] * A2.A[-1,2,3,-5] * Er.A[3,-4]
+    return CompositeMPOTensor(x)
+end
+
+function _actionb2_split(El::LeftEnvironmentTensor{2}, A1::AdjointMPOTensor{4}, A2::AdjointMPOTensor{4}, Er::RightEnvironmentTensor{2})
+    @tensor x[-1,-2,-3;-4,-5,-6] ≔ El.A[2,-6] * A1.A[3,-3,-5,2] * A2.A[1,-2,-4,3] * Er.A[-1,1]
+    return AdjointCompositeMPOTensor(x)
 end
 
 function actionb(O::DenseProjectiveHamiltonian{3,2}, A1::T, A2::T) where T <: Union{DenseMPOTensor{4}, AdjointMPOTensor{4}}

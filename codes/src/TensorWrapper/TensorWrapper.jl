@@ -148,10 +148,12 @@ function TensorKit.norm(obj::RefMPO)
 end
 
 function normalize!(obj::AbstractTensorWrapper)
-    tmp = norm(obj.A)
-    obj.A = obj.A / tmp
-    return tmp
+    Norm = norm(obj.A)
+    obj.A = obj.A / Norm
+    return Norm
 end
+
+normalize!(A::AbstractTensorMap) = TensorKit.normalize!(A)
 
 Base.:+(A::T, B::T) where T <: AbstractTensorWrapper = T(A.A + B.A)
 Base.:+(::Nothing, B::AbstractTensorWrapper) = B
@@ -228,3 +230,17 @@ axpy!(::Number, ::Nothing, B::LeftEnvironmentTensor) = B
 axpy!(::Number, ::Nothing, B::RightEnvironmentTensor) = B
 
 Base.length(::Union{DenseMPS{L}, DenseMPO{L}, RefMPS{L}, RefMPO{L}}) where L = L
+
+function axpby!(α::Number, x::CompositeMPOTensor{N₁,R₁}, β::Number, y::CompositeMPOTensor{N₂,R₂}) where {N₁,R₁,N₂,R₂}
+    @assert N₁ == N₂ && R₁ == R₂
+    y.A = x.A * α + y.A * β
+    return y
+end
+
+function axpby!(::Number, ::Nothing, β::Number, y::CompositeMPOTensor)
+    y.A = y.A * β
+    return y
+end
+
+axpy!(α::Number, x::CompositeMPOTensor, y::CompositeMPOTensor) = axpby!(α,x,1,y)
+
