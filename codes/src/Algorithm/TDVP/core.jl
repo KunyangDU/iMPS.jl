@@ -4,14 +4,10 @@ function TDVP!(Env::Environment{3,L}, Alg::TDVPalgo, info::TDVPinfo;kwargs...) w
     iszero(info.E) && (info.E = _scalar(Env) |> real)
     __init_io__()
 
-    l2rinfo = TDVPsweepinfo(L2R(),info.err)
+    l2rinfo = TDVPsweepinfo(L2R())
     l2rinfo.E = info.E
     to = TDVP!(Env,Alg,l2rinfo)
     isreal(Alg.τ) && (info.lnZ += 2 * log(normalize!(Env.layer[1])))
-    # if isreal(Alg.τ)
-    #     Env.layer[3] isa RefMPO ? (d = normalize!(Env.layer[1])) : (@assert (d = normalize!(Env.layer[1])) ≈ normalize!(Env.layer[3]))
-    #     info.lnZ += 2 * log(d)
-    # end
     _merge_io!(to)
     show(to;title=">>> TDVP >>>")
     print("\n")
@@ -19,14 +15,10 @@ function TDVP!(Env::Environment{3,L}, Alg::TDVPalgo, info::TDVPinfo;kwargs...) w
     merge!(info,l2rinfo)
     flush(stdout)
 
-    r2linfo = TDVPsweepinfo(R2L(),info.err)
+    r2linfo = TDVPsweepinfo(R2L())
     r2linfo.E = info.E
     to = TDVP!(Env,Alg,r2linfo)
     isreal(Alg.τ) && (info.lnZ += 2 * log(normalize!(Env.layer[1])))
-    # if isreal(Alg.τ)
-    #     Env.layer[3] isa RefMPO ? (d = normalize!(Env.layer[1])) : (@assert (d = normalize!(Env.layer[1])) ≈ normalize!(Env.layer[3]))
-    #     info.lnZ += 2 * log(d)
-    # end
     _merge_io!(to)
     show(to;title="<<< TDVP <<<")
     print("\n")

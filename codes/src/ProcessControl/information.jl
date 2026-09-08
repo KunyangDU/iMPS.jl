@@ -148,8 +148,7 @@ end
 function TimerOutputs.merge!(A::DMRGinfo,B::DMRGsweepinfo{dir}) where dir
     merge!(A.bond, B.bond)
     merge!(A.solver, B.solver)
-    A.err = max(A.err,B.err)
-    # A.E = B.E
+    A.err = B.err
     A.E = vcat(A.E,B.E)
     A.S = vcat(A.S,B.S)
     dir <: R2L && (A.n += 1)
@@ -160,7 +159,6 @@ function TimerOutputs.merge!(A::TDVPinfo,B::TDVPsweepinfo{dir}) where dir
     merge!(A.bond, B.bond)
     merge!(A.solver, B.solver)
     A.err = B.err
-    # A.E = B.E
     A.S = vcat(A.S,B.S)
     return A
 end

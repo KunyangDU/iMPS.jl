@@ -15,7 +15,7 @@ function _initialMPS(O::SparseProjectiveHamiltonian{2})
     return tmp
 end
 
-function groundEig(O::Union{SparseProjectiveHamiltonian{N},DenseProjectiveHamiltonian{3,N}},alg::Krylovalgo = DMRGDefaultLanczos;x₀ = _initialMPS(O)) where N
+function groundEig(O::Union{SparseProjectiveHamiltonian{N},DenseProjectiveHamiltonian{3,N}},alg::Krylovalgo;x₀ = _initialMPS(O)) where N
     reset_timer!(get_timer("action"))
     Eg,Ev,info = eigsolve(x -> action(O,x), x₀, 1, :SR, alg.Alg)
     @assert imag(Eg[1]) < 1e-8 "Operator not hermitian"
@@ -25,7 +25,7 @@ end
 function evolve!(
     obj::Union{AbstractMPSTensor, AbstractMPOTensor, DenseMPO},
     O::Union{SparseProjectiveHamiltonian{N},DenseProjectiveHamiltonian{3,N}}, τ::Number,
-    alg::Krylovalgo = TDVPDefaultLanczos) where N
+    alg::Krylovalgo) where N
     nm = normalize!(obj)
     reset_timer!(get_timer("action"))
     tmp,info = exponentiate(x -> action(O,x), -τ, obj, alg.Alg)

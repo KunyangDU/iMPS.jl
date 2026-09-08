@@ -4,7 +4,7 @@ function mul!(C::Union{DenseMPO,DenseMPS}, A::Union{DenseMPO,DenseMPS}, B::Union
 
     Nmul = get(kwargs,:Nmul,3)
     verbose = get(kwargs,:verbose,false)
-    alg = get(kwargs,:alg,Algebraalgo(SingleSite(),CBEalgo(dynamicSVD(ceil(Int64, D * 1.25)),NoStruc(),0,D),trunc,Nmul,ϵ,verbose))
+    alg = get(kwargs,:alg,Algebraalgo(SingleSite(),CBEalgo(dynamicSVD(),NoStruc(),0,ceil(Int64, D * 1.25),1e-12),trunc,Nmul,ϵ,verbose))
     
     return mul!(C,A,B,α,alg)
 end

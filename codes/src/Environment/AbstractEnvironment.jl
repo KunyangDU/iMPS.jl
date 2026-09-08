@@ -43,11 +43,24 @@ mutable struct CBEenvironment <: AbstractEnvironment
     tR₀::AbstractTensorWrapper
     tL::Union{AbstractTensorWrapper,SparseMPOTensor,Nothing}
     tR::Union{AbstractTensorWrapper,SparseMPOTensor,Nothing}
-    D_i::Int64
-    D_f::Int64
     Λ::Union{AbstractTensorWrapper,Nothing}
     Lorth::Union{SparseLeftEnvironmentTensor,LeftCompositeEnvironmentTensor,LeftEnvironmentTensor,DenseLeftEnvironmentTensor,Nothing}
     Rorth::Union{SparseRightEnvironmentTensor,RightCompositeEnvironmentTensor,RightEnvironmentTensor,DenseRightEnvironmentTensor,Nothing}
     lm::Union{LayerMap,Nothing}
+    function CBEenvironment(tL₀::AbstractTensorWrapper,tR₀::AbstractTensorWrapper)
+        return new(tL₀,tR₀,nothing,nothing,nothing,nothing,nothing,nothing)
+    end
+    function CBEenvironment(
+            tL₀::AbstractTensorWrapper,
+            tR₀::AbstractTensorWrapper,
+            tL::Union{AbstractTensorWrapper,SparseMPOTensor,Nothing},
+            tR::Union{AbstractTensorWrapper,SparseMPOTensor,Nothing},
+            Λ::Union{AbstractTensorWrapper,Nothing},
+            Lorth::Union{SparseLeftEnvironmentTensor,LeftCompositeEnvironmentTensor,LeftEnvironmentTensor,DenseLeftEnvironmentTensor,Nothing},
+            Rorth::Union{SparseRightEnvironmentTensor,RightCompositeEnvironmentTensor,RightEnvironmentTensor,DenseRightEnvironmentTensor,Nothing},
+            lm::Union{LayerMap,Nothing}
+        )
+        return new(tL₀,tR₀,tL,tR,Λ,Lorth,Rorth,lm)
+    end
 end
 

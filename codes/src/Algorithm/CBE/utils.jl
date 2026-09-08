@@ -1,39 +1,44 @@
-function _cbeorth!(Q::T,A::T,direction::AbstractDirection) where T <: Union{MPSTensor{3},DenseMPOTensor{4},AdjointMPOTensor{4}}
-    Q.A -= _cbeproj(Q,A,direction)
-    return norm(_cbeinner(Q,A,direction))
-end
+# function _cbeorth!(Q::T,A::T,direction::AbstractDirection) where T <: Union{MPSTensor{3},DenseMPOTensor{4},AdjointMPOTensor{4}}
+#     Q.A -= _cbeproj(Q,A,direction)
+#     return norm(_cbeinner(Q,A,direction))
+# end
 
-function _cbeproj(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},direction::AbstractDirection)
-    if typeof(direction) <: L2R
-        return @tensor tmp[-1,-2;-3,-4] ≔ Q.A[2,-2,1,3] * A'.A[1,3,2,4] * A.A[-1,4,-3,-4]
-    elseif typeof(direction) <: R2L 
-        return @tensor tmp[-1,-2;-3,-4] ≔ Q.A[2,1,-3,3] * A'.A[4,3,2,1] * A.A[-1,-2,4,-4]
-    end
-end
+# _cbeproj(Q::AdjointMPOTensor{4},A::AdjointMPOTensor{4},direction::AbstractDirection) = _cbeproj(Q',A',direction)'
 
-function _cbeinner(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},direction::AbstractDirection)
-    if typeof(direction) <: L2R
-        return @tensor tmp[-1;-2] ≔ Q.A[2,-1,1,3] * A'.A[1,3,2,-2]
-    elseif typeof(direction) <: R2L
-        return @tensor tmp[-1;-2] ≔ Q.A[2,1,-2,3] * A'.A[-1,3,2,1]
-    end
-end
+# function _cbeproj(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},direction::AbstractDirection)
+#     if typeof(direction) <: L2R
+#         return @tensor tmp[-1,-2;-3,-4] ≔ Q.A[2,-2,1,3] * A'.A[1,3,2,4] * A.A[-1,4,-3,-4]
+#     elseif typeof(direction) <: R2L 
+#         return @tensor tmp[-1,-2;-3,-4] ≔ Q.A[2,1,-3,3] * A'.A[4,3,2,1] * A.A[-1,-2,4,-4]
+#     end
+# end
 
-function _cbeproj(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)
-    if typeof(direction) <: L2R
-        return @tensor tmp[-1,-2;-3] ≔ Q.A[-1,2,1] * A'.A[1,3,2] * A.A[3,-2,-3]
-    elseif typeof(direction) <: R2L 
-        return @tensor tmp[-1,-2;-3] ≔ Q.A[1,2,-3] * A'.A[3,1,2] * A.A[-1,-2,3]
-    end
-end
+# function _cbeproj(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)
+#     if typeof(direction) <: L2R
+#         return @tensor tmp[-1,-2;-3] ≔ Q.A[-1,2,1] * A'.A[1,3,2] * A.A[3,-2,-3]
+#     elseif typeof(direction) <: R2L 
+#         return @tensor tmp[-1,-2;-3] ≔ Q.A[1,2,-3] * A'.A[3,1,2] * A.A[-1,-2,3]
+#     end
+# end
 
-function _cbeinner(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)
-    if typeof(direction) <: L2R
-        return @tensor tmp[-1;-2] ≔ Q.A[-1,2,1] * A'.A[1,-2,2]
-    elseif typeof(direction) <: R2L
-        return @tensor tmp[-1;-2] ≔ Q.A[1,2,-2] * A'.A[-1,1,2]
-    end
-end
+# _cbeinner(Q::AdjointMPOTensor{4},A::AdjointMPOTensor{4},direction::AbstractDirection) = _cbeinner(Q',A',direction)'
+
+# function _cbeinner(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},direction::AbstractDirection)
+#     if typeof(direction) <: L2R
+#         return @tensor tmp[-1;-2] ≔ Q.A[2,-1,1,3] * A'.A[1,3,2,-2]
+#     elseif typeof(direction) <: R2L
+#         return @tensor tmp[-1;-2] ≔ Q.A[2,1,-2,3] * A'.A[-1,3,2,1]
+#     end
+# end
+
+
+# function _cbeinner(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)
+#     if typeof(direction) <: L2R
+#         return @tensor tmp[-1;-2] ≔ Q.A[-1,2,1] * A'.A[1,-2,2]
+#     elseif typeof(direction) <: R2L
+#         return @tensor tmp[-1;-2] ≔ Q.A[1,2,-2] * A'.A[-1,1,2]
+#     end
+# end
 
 _expanddim(::ComplexSpace,D::Int64) = ℂ^D
 
@@ -66,60 +71,6 @@ function _cbetensor(func,A::DenseMPOTensor{4}, D_f::Int64,direction::AbstractDir
     normalize!(tmp)
     return tmp
 end
-
-# function _cbedsum(Q::MPSTensor{3},A::MPSTensor{3},direction::AbstractDirection)
-#     if typeof(direction) <: L2R
-#         # ~,Q = rightorth(catcodomain(map(x -> permute(x.A,((1,),(2,3))),(Q,A))...))
-#         Q = catcodomain(map(x -> permute(x.A,((1,),(2,3))),(Q,A))...)
-#         Q = MPSTensor(permute(Q, ((1, 2), (3,))))
-#     elseif typeof(direction) <: R2L
-#         # Q,~ = leftorth(catdomain(Q.A,A.A))
-#         Q = catdomain(Q.A,A.A)
-#         Q = MPSTensor(Q)
-#     end
-#     return Q
-# end
-
-# function _cbedsum(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},direction::AbstractDirection)
-#     if typeof(direction) <: L2R
-#         Q = catcodomain(map(x -> permute(x.A,((2,),(1,3,4))),(Q,A))...)
-#         # ~,Q = rightorth(DenseMPOTensor(permute(Q, ((2, 1), (3,4)))))
-#         Q = DenseMPOTensor(permute(Q, ((2, 1), (3,4))))
-#     elseif typeof(direction) <: R2L
-#         Q = catdomain(map(x -> permute(x.A, ((1, 2,4), (3,))),(Q,A))...)
-#         # Q,~ = leftorth(DenseMPOTensor(permute(Q, ((1, 2), (4,3)))))
-#         Q = DenseMPOTensor(permute(Q, ((1, 2), (4,3))))
-#     end
-#     return Q
-# end
-
-# function _cbedsum(Q::MPSTensor{3},A::MPSTensor{3},::L2R)
-#     # ~,Q = rightorth(catcodomain(map(x -> permute(x.A,((1,),(2,3))),(Q,A))...))
-#     Q = catcodomain(map(x -> permute(x.A,((1,),(2,3))),(Q,A))...)
-#     Q = MPSTensor(permute(Q, ((1, 2), (3,))))
-# end 
-
-# function _cbedsum(Q::MPSTensor{3},A::MPSTensor{3},::R2L)
-#     # Q,~ = leftorth(catdomain(Q.A,A.A))
-#     Q = catdomain(Q.A,A.A)
-#     Q = MPSTensor(Q)
-#     return Q
-# end
-
-# function _cbedsum(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},::L2R)
-#     Q = catcodomain(map(x -> permute(x.A,((2,),(1,3,4))),(Q,A))...)
-#     # ~,Q = rightorth(DenseMPOTensor(permute(Q, ((2, 1), (3,4)))))
-#     Q = DenseMPOTensor(permute(Q, ((2, 1), (3,4))))
-#     return Q
-# end
-
-# function _cbedsum(Q::DenseMPOTensor{4},A::DenseMPOTensor{4},::R2L)
-#     Q = catdomain(map(x -> permute(x.A, ((1, 2,4), (3,))),(Q,A))...)
-#     # Q,~ = leftorth(DenseMPOTensor(permute(Q, ((1, 2), (4,3)))))
-#     Q = DenseMPOTensor(permute(Q, ((1, 2), (4,3))))
-#     return Q
-# end
-
 
 function _loplus(A::MPSTensor{3},B::MPSTensor{3})
     Q = catcodomain(map(x -> permute(x.A,((1,),(2,3))),(A,B))...)
@@ -160,10 +111,6 @@ function _rexpand(Al::MPSTensor{3}, Ar::MPSTensor{3})
 end
 
 _cbetensor(func,A::AdjointMPOTensor{4}, D_f::Int64,direction::AbstractDirection) = _cbetensor(func,A',D_f,direction)'
-_cbeproj(Q::AdjointMPOTensor{4},A::AdjointMPOTensor{4},direction::AbstractDirection) = _cbeproj(Q',A',direction)'
-_cbeinner(Q::AdjointMPOTensor{4},A::AdjointMPOTensor{4},direction::AbstractDirection) = _cbeinner(Q',A',direction)'
-_cbedsum(Q::AdjointMPOTensor{4},A::AdjointMPOTensor{4},direction::AbstractDirection) = _cbedsum(Q',A',direction)'
-
 
 _cbe_maxdim(env::Environment{3}, ::CBEalgo{sch,struc,1}, ::CBEinfo{L2R}) where {sch,struc} = (site = env.center[1]; return _cbe_maxdim(env.layer[1][site:site+1]...))
 _cbe_maxdim(env::Environment{3}, ::CBEalgo{sch,struc,1}, ::CBEinfo{R2L}) where {sch,struc} = (site = env.center[1]; return _cbe_maxdim(env.layer[1][site-1:site]...))

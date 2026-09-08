@@ -66,11 +66,11 @@ function _orth_sub!(x::RightCompositeEnvironmentTensor{2, 4, 3, 1}, A::MPSTensor
 end
 
 function _orth_sub!(x::LeftCompositeEnvironmentTensor{2, 4, 3, 1}, A::DenseMPOTensor{4})
-    @tensor x.A[-1 -2;-4 -5] -= x.A[-1,-2,2,1] * A.A[2,1,3,4] * A.A'[3,4,-4,-5]
+    @tensor x.A[-1 -2;-4 -5] -= x.A[-1,3,2,1] * A.A[2,1,4,3] * A.A'[4,-2,-4,-5]
     return x
 end
 
 function _orth_sub!(x::RightCompositeEnvironmentTensor{2, 4, 3, 1}, A::DenseMPOTensor{4})
-    @tensor x.A[-1 -2;-4 -5] -= x.A[1,-2,-4,2] * A.A[2,3,1,4] * A.A'[-1,4,-5,3]
+    @tensor x.A[-1 -2;-4 -5] -= x.A[1,3,-4,2] * A.A[2,4,1,3] * A.A'[-1,-2,-5,4]
     return x
 end

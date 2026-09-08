@@ -2,20 +2,22 @@ function CBE!(env::Environment, alg::CBEalgo{dynamicSVD}, info::CBEinfo{Dir};kwa
     to = TimerOutput()
 
     Dl,Dr = _cbe_maxdim(env,alg,info)
-    
-    if !(Dl ≤ alg.scheme.Df || Dr ≤ alg.scheme.Df)
-        @timeit to "rand SVD" localto = CBE!(env,CBEalgo(alg,randSVD(alg.scheme.Df)),info)
-        merge!(to,localto,tree_point = ["rand SVD"])
-        return to
-    end
-
     Dc = _cbe_currentdim(env,alg,info)
-    if !(Dl ≤ Dc || Dr ≤ Dc)
+
+    if Dl > Dc && Dr > Dc
+        # not full yet
         @timeit to "full SVD" localto = CBE!(env,CBEalgo(alg,fullSVD()),info)
         merge!(to,localto,tree_point = ["full SVD"])
         return to
+    elseif Dl > alg.D && Dr > alg.D
+        # full but needs trunc
+        @timeit to "rand SVD" localto = CBE!(env,CBEalgo(alg,randSVD()),info)
+        merge!(to,localto,tree_point = ["rand SVD"])
+        return to
+    else
+        # full but no trunc is need
+        return to
     end
-    return to
 end
 
 CBE!(env::CBEenvironment, alg::CBEalgo{randSVD}, info::CBEinfo;kwargs...) = randSVD!(env,alg,info)

@@ -10,7 +10,7 @@ function DMRG!(Env::Environment{3,L},Alg::DMRGalgo{DoubleSite},info::DMRGsweepin
         @timeit localto "Krylov" begin
             @timeit localto "projection" projH = proj2(Env,site,site+1;E₀ = E₀)
             @timeit localto "composite" x₀ = composite(Env.layer[1][site:site+1]...)
-            Eg,Egv,localinfo.solver = groundEig(projH;x₀ = x₀)
+            Eg,Egv,localinfo.solver = groundEig(projH, Alg.solver;x₀ = x₀)
             localinfo.E = E₀ + Eg |> real
         end
         merge!(localto,get_timer("action");tree_point = ["Krylov"])
@@ -38,7 +38,7 @@ function DMRG!(Env::Environment{3,L},Alg::DMRGalgo{DoubleSite},info::DMRGsweepin
         @timeit localto "Krylov" begin
             @timeit localto "projection" projH = proj2(Env,site-1,site;E₀ = E₀)
             @timeit localto "composite" x₀ = composite(Env.layer[1][site-1:site]...)
-            Eg,Egv,localinfo.solver = groundEig(projH;x₀ = x₀)
+            Eg,Egv,localinfo.solver = groundEig(projH, Alg.solver;x₀ = x₀)
             localinfo.E = E₀ + Eg |> real
         end 
         merge!(localto,get_timer("action");tree_point = ["Krylov"]) 

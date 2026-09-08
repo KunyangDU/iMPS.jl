@@ -1,41 +1,28 @@
 function fullSVD!(env::CBEenvironment, alg::CBEalgo,info::CBEinfo{L2R})
     localto = TimerOutput()
     @timeit localto "composite" x = composite(env.tL₀,env.tR₀)
-    @timeit localto "rightorth" env.tL,env.tR = rightorth(x)
-    # @timeit localto "projection" H = proj2(env.Lorth,env.tL,env.tR,env.Rorth)
-    # reset_timer!(get_timer("action"))
-    # obj = actionb(H,env.tL₀,env.tR₀)
-    # merge!(localto,get_timer("action"))
-    # @timeit localto "SVD" env.tL,env.tR,info.err,info.bond = tsvd(obj;direction = :left,trunc = truncdim(env.D_f))
+    @timeit localto "rightorth" env.tL,env.tR,~,info.bond = tsvd(x;direction = :left,trunc = truncdim(alg.D))
     return localto
 end
 
 function fullSVD!(env::CBEenvironment,alg::CBEalgo,info::CBEinfo{R2L})
     localto = TimerOutput()
     @timeit localto "composite" x = composite(env.tL₀,env.tR₀)
-    @timeit localto "leftorth" env.tL,env.tR = leftorth(x)
-    # @timeit localto "projection" H = proj2(env.Lorth,env.tL,env.tR,env.Rorth)
-    # reset_timer!(get_timer("action"))
-    # obj = actionb(H,env.tL₀,env.tR₀)
-    # merge!(localto,get_timer("action"))
-    # @timeit localto "SVD" env.tL,env.tR,info.err,info.bond = tsvd(obj;direction = :right,trunc = truncdim(env.D_f))
+    @timeit localto "leftorth" env.tL,env.tR,~,info.bond  = tsvd(x;direction = :right,trunc = truncdim(alg.D))
     return localto
 end
 
 function randSVD!(env::CBEenvironment, alg::CBEalgo,info::CBEinfo{L2R})
     localto = TimerOutput()
 
-    Ω = _cbetensor(randn,env.tR₀,env.D_f,L2R())
+    Ω = _cbetensor(randn,env.tR₀,alg.D,L2R())
 
-    # @timeit localto "splice Λ" splice!(env.Lorth,env.Λ)
     @timeit localto "splice Ω" R_trunc = splice(env.Rorth,Ω)
     @timeit localto "contract_LO*Rt" Q = contract(env.Lorth, R_trunc, env.lm)
     @timeit localto "leftorth" Q,~ = leftorth(Q)
     @timeit localto "splice Q'" L_trunc = splice(env.Lorth,Q')
     @timeit localto "contract_Lt*RO" obj = contract(L_trunc, env.Rorth, env.lm)
-    # @timeit localto "pre-orthogonalize" orthogonalize!(obj,tR₀,:right)
-    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(obj';direction = :left,trunc = truncdim(env.D_f - env.D_i))
-    @timeit localto "after-orthogonalize" orthogonalize!(tR′,env.tR₀,L2R())
+    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(obj';direction = :left,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
 
     @timeit localto "oplus" begin 
         tL′, tR′ = _rexpand(env.tL₀, tR′)
@@ -46,7 +33,7 @@ function randSVD!(env::CBEenvironment, alg::CBEalgo,info::CBEinfo{L2R})
     # @timeit localto "check" begin
     #     x₀ = composite(env.tL₀,env.tR₀)
     #     x = composite(env.tL,env.tR)
-    #     # @show norm(x - x₀)^2
+    #     @show norm(x - x₀)^2
     #     # @show norm(x),norm(x₀)
     # end
 
@@ -56,17 +43,14 @@ end
 function randSVD!(env::CBEenvironment,alg::CBEalgo,info::CBEinfo{R2L})
     localto = TimerOutput()
 
-    Ω = _cbetensor(randn,env.tL₀,env.D_f,R2L())
+    Ω = _cbetensor(randn,env.tL₀,alg.D,R2L())
 
-    # @timeit localto "splice Λ" splice!(env.Rorth,env.Λ)
     @timeit localto "splice Ω" L_trunc = splice(env.Lorth,Ω)
     @timeit localto "contract_Lt*RO" Q = contract(L_trunc, env.Rorth, env.lm)
     @timeit localto "rightorth" ~,Q = rightorth(Q)
     @timeit localto "splice Q'" R_trunc = splice(env.Rorth,Q')
     @timeit localto "contract_LO*Rt" obj = contract(env.Lorth, R_trunc, env.lm)
-    # @timeit localto "pre-orthogonalize" orthogonalize!(obj,tL₀,:left)
-    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(obj';direction = :right,trunc = truncdim(env.D_f - env.D_i))
-    @timeit localto "after-orthogonalize" orthogonalize!(tL′,env.tL₀,R2L())
+    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(obj';direction = :right,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
 
     @timeit localto "oplus" begin 
         tL′, tR′ = _lexpand(tL′, env.tR₀)
@@ -77,7 +61,7 @@ function randSVD!(env::CBEenvironment,alg::CBEalgo,info::CBEinfo{R2L})
     # @timeit localto "check" begin
     #     x₀ = composite(env.tL₀,env.tR₀)
     #     x = composite(env.tL,env.tR)
-    #     # @show norm(x - x₀)^2
+    #     @show norm(x - x₀)^2
     #     # @show norm(x),norm(x₀)
     # end
 

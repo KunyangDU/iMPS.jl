@@ -8,22 +8,26 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{SingleSite,alg},info::TDVPswe
             @timeit localto "CBE" begin
                 cbeinfo = CBEinfo(L2R())
                 cbeto = CBE!(Env,Alg.alg,cbeinfo)
-                merge!(localinfo,cbeinfo)
+                # merge!(localinfo,cbeinfo)
             end
             merge!(localto,cbeto,tree_point = ["CBE"])
         end
+
         @timeit localto "evolve" ~,localinfo.solver = evolve!(Env.layer[1][site], proj1(Env,site;E₀ = info.E), Alg.τ, Alg.solver)
         merge!(localto,get_timer("action");tree_point = ["evolve"])
         rmul!(Env.layer[1][site],exp(-Alg.τ * info.E))
-        
+
+        Norm = normalize!(Env.layer[1][site])
         @timeit localto "svd" Env.layer[1][site],tr,localinfo.err,bondinfo = tsvd(Env.layer[1][site];direction=:right,trunc = Alg.trunc)
+        rmul!(tr,Norm)
+
         EnvR = Env.envs[site+1]
         @timeit localto "pushright" pushright!(Env)
         @timeit localto "back evolve" ~, solver = evolve!(tr, proj0(Env.envs[site+1],EnvR,issparse(Env.layer[2]) ? Env.layer[2][site+1].left : nothing;E₀ = info.E), -Alg.τ, Alg.solver)
         rmul!(tr,exp(Alg.τ * info.E))
         Env.layer[1][site+1] = splice(tr,Env.layer[1][site+1])
         canonicalize!!(Env,site+1)
-
+        
         merge!(localinfo,bondinfo)
         merge!(localto,get_timer("action");tree_point = ["back evolve"])
         merge!(localinfo.solver,solver)
@@ -51,7 +55,7 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{SingleSite,alg},info::TDVPswe
             @timeit localto "CBE" begin
                 cbeinfo = CBEinfo(R2L())
                 cbeto = CBE!(Env,Alg.alg,cbeinfo)
-                merge!(localinfo,cbeinfo)
+                # merge!(localinfo,cbeinfo)
             end
             merge!(localto,cbeto,tree_point = ["CBE"])
         end
@@ -60,7 +64,10 @@ function TDVP!(Env::Environment{3,L},Alg::TDVPalgo{SingleSite,alg},info::TDVPswe
         merge!(localto,get_timer("action");tree_point = ["evolve"])
         rmul!(Env.layer[1][site],exp(-Alg.τ * info.E))
 
+        Norm = normalize!(Env.layer[1][site])
         @timeit localto "svd" tl,Env.layer[1][site],localinfo.err,bondinfo = tsvd(Env.layer[1][site];direction=:left,trunc = Alg.trunc)
+        rmul!(tl,Norm)
+
         EnvL = Env.envs[site]
         @timeit localto "pushleft" pushleft!(Env)
         @timeit localto "back evolve" ~, solver = evolve!(tl, proj0(EnvL,Env.envs[site],issparse(Env.layer[2]) ? Env.layer[2][site-1].right : nothing;E₀ = info.E), -Alg.τ, Alg.solver)

@@ -1,64 +1,3 @@
-# function orthogonalize!(env::Environment{3},B::Union{DenseMPOTensor{4},MPSTensor{3}},EnvR::SparseRightEnvironmentTensor,osite::Int64)
-#     EnvRorth = Vector(undef, length(env.layer[2][osite].left.fwd))
-#     EnvRorth .= nothing
-#     validind = _validind(env.layer[2][osite])
-#     n = length(validind)
-#     # 逆索引 i -> [(k, wi)]：输出槽 i 被哪些 validind 项（k）以权重 wi 散射（左键 l_inds）
-#     inverse = [Any[] for _ in eachindex(EnvRorth)]
-#     for k in 1:n
-#         l_inds, j, r_inds, wl, wr = validind[k]
-#         for (idx, i) in enumerate(l_inds)
-#             push!(inverse[i], (k, wl[idx]))
-#         end
-#     end
-#     # Phase 1：并行算每个 validind 项的 C（不相交写 tmpC[k]）
-#     tmpC = Vector{Any}(nothing, n)
-#     threaded_foreach(eachindex(validind)) do k
-#         l_inds, j, r_inds, wl, wr = validind[k]
-#         tmp = contract(B, env.layer[2][osite][j], _wsum(EnvR, r_inds, wr))
-#         tmpC[k] = _orth_sub!(tmp, B)
-#     end
-#     # Phase 2：并行按输出槽散射（不相交写 EnvRorth[i]）
-#     threaded_foreach(eachindex(EnvRorth)) do i
-#         acc = nothing
-#         for (k, wi) in inverse[i]
-#             acc = axpy!(wi, tmpC[k], acc)
-#         end
-#         EnvRorth[i] = acc
-#     end
-#     return SparseRightEnvironmentTensor(convert(Vector{RightCompositeEnvironmentTensor},EnvRorth))
-# end
-
-# function orthogonalize!(env::Environment{3},A::Union{DenseMPOTensor{4},MPSTensor{3}},EnvL::SparseLeftEnvironmentTensor,osite::Int64)
-#     EnvLorth = Vector(undef, length(env.layer[2][osite].right.rev))
-#     EnvLorth .= nothing
-#     validind = _validind(env.layer[2][osite])
-#     n = length(validind)
-#     # 逆索引 i -> [(k, wi)]：输出槽 i 被哪些 validind 项（k）以权重 wi 散射（右键 r_inds）
-#     inverse = [Any[] for _ in eachindex(EnvLorth)]
-#     for k in 1:n
-#         l_inds, j, r_inds, wl, wr = validind[k]
-#         for (idx, i) in enumerate(r_inds)
-#             push!(inverse[i], (k, wr[idx]))
-#         end
-#     end
-#     # Phase 1：并行算每个 validind 项的 C（不相交写 tmpC[k]）
-#     tmpC = Vector{Any}(nothing, n)
-#     threaded_foreach(eachindex(validind)) do k
-#         l_inds, j, r_inds, wl, wr = validind[k]
-#         tmp = contract(_wsum(EnvL, l_inds, wl), A, env.layer[2][osite][j])
-#         tmpC[k] = _orth_sub!(tmp, A)
-#     end
-#     # Phase 2：并行按输出槽散射（不相交写 EnvLorth[i]）
-#     threaded_foreach(eachindex(EnvLorth)) do i
-#         acc = nothing
-#         for (k, wi) in inverse[i]
-#             acc = axpy!(wi, tmpC[k], acc)
-#         end
-#         EnvLorth[i] = acc
-#     end
-#     return SparseLeftEnvironmentTensor(convert(Vector{LeftCompositeEnvironmentTensor},EnvLorth))
-# end
 
 # 逐元素归并 per-worker 私有输出向量（键索引 → 累加张量），供 threaded_reduce! 的 combine! 使用
 function _merge_envs!(x::Vector{Any}, y::Vector{Any})
@@ -106,18 +45,22 @@ function orthogonalize!(A::T,H::SparseMPOTensor,A′::T′,EnvL::SparseLeftEnvir
     return SparseLeftEnvironmentTensor(convert(Vector{LeftCompositeEnvironmentTensor}, merged))
 end
 
-function orthogonalize!(A::Union{DenseMPOTensor{4},MPSTensor{3}},A′::Union{DenseMPOTensor{4},MPSTensor{3}},Env::Union{DenseLeftEnvironmentTensor,DenseRightEnvironmentTensor})
-    tmp = contract(Env.A,A)
-    Envorth = tmp - contract(tmp,A′)
-    return Envorth
-end
+# function orthogonalize!(A::Union{DenseMPOTensor{4},MPSTensor{3}},A′::Union{DenseMPOTensor{4},MPSTensor{3}},Env::Union{DenseLeftEnvironmentTensor,DenseRightEnvironmentTensor})
+#     tmp = contract(Env.A,A)
+#     Envorth = tmp - contract(tmp,A′)
+#     return Envorth
+# end
 
-function orthogonalize!(Q::T,A::T,direction::AbstractDirection;tol::Number=1e-4) where T <: Union{MPSTensor{3},DenseMPOTensor{4},AdjointMPOTensor{4}}
-    ϵ = norm(_cbeinner(Q,A,direction))
-    ϵ > tol && (ϵ = _cbeorth!(Q,A,direction))
-    @assert ϵ < tol ϵ
-    return Q
-end
+# function orthogonalize!(Q::T,A::T,direction::AbstractDirection;tol::Number=1e-16) where T <: Union{MPSTensor{3},DenseMPOTensor{4},AdjointMPOTensor{4}}
+#     norm(Q) ≈ 0 && return Q
+#     ϵ = norm(_cbeinner(Q,A,direction)) / norm(Q)
+#     for _ in 1:10
+#         ϵ = _cbeorth!(Q,A,direction) / norm(Q)
+#         ϵ < tol && break
+#     end
+#     @assert ϵ < tol ϵ
+#     return Q
+# end
 
 orthogonalize!(A::T₁,H::T,A′::T₂,EnvL::DenseLeftEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T₁ <: Union{DenseMPOTensor{4}, MPSTensor{3}}, T₂ <: Union{AdjointMPOTensor{4},AdjointMPSTensor{3}}} = _orth_sub!(contract(EnvL.A, H, A′), A)
 orthogonalize!(B::T₁,H::T,B′::T₂,EnvR::DenseRightEnvironmentTensor) where {T <: Union{DenseMPOTensor{4},AdjointMPOTensor{4}}, T₁ <: Union{DenseMPOTensor{4}, MPSTensor{3}}, T₂ <: Union{AdjointMPOTensor{4},AdjointMPSTensor{3}}} = _orth_sub!(contract(H, B′, EnvR.A), B)
