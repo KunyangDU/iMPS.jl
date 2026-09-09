@@ -1,5 +1,5 @@
 
-mutable struct RightEnvironmentTensor{R} <: AbstractEnvironmentTensor
+mutable struct RightEnvironmentTensor{R} <: AbstractTensorWrapper
     A::AbstractTensorMap
 
     function RightEnvironmentTensor(t::AbstractTensorMap)
@@ -10,7 +10,7 @@ mutable struct RightEnvironmentTensor{R} <: AbstractEnvironmentTensor
     end
 end
 
-mutable struct LeftEnvironmentTensor{R} <: AbstractEnvironmentTensor
+mutable struct LeftEnvironmentTensor{R} <: AbstractTensorWrapper
     A::AbstractTensorMap
 
     function LeftEnvironmentTensor(t::AbstractTensorMap)
@@ -24,7 +24,7 @@ end
 Base.adjoint(A::LeftEnvironmentTensor{2}) = LeftEnvironmentTensor{2}(A.A')
 Base.adjoint(A::RightEnvironmentTensor{2}) = RightEnvironmentTensor{2}(A.A')
 
-mutable struct LeftCompositeEnvironmentTensor{Rcd,Rt,N,I} <: AbstractEnvironmentTensor
+mutable struct LeftCompositeEnvironmentTensor{Rcd,Rt,N,I} <: AbstractTensorWrapper
     A::AbstractTensorMap
 
     function LeftCompositeEnvironmentTensor(t::AbstractTensorMap)
@@ -44,7 +44,7 @@ mutable struct LeftCompositeEnvironmentTensor{Rcd,Rt,N,I} <: AbstractEnvironment
     end
 end
 
-mutable struct RightCompositeEnvironmentTensor{Rcd,Rt,N,I} <: AbstractEnvironmentTensor
+mutable struct RightCompositeEnvironmentTensor{Rcd,Rt,N,I} <: AbstractTensorWrapper
     A::AbstractTensorMap
 
     function RightCompositeEnvironmentTensor(t::AbstractTensorMap)
@@ -165,7 +165,7 @@ mutable struct DenseLeftEnvironmentTensor{R} <: AbstractLeftEnvironmentTensor
     end
 end
 
-mutable struct DenseRightEnvironmentTensor{R} <: AbstractLeftEnvironmentTensor
+mutable struct DenseRightEnvironmentTensor{R} <: AbstractRightEnvironmentTensor
     A::RightEnvironmentTensor
 
     function DenseRightEnvironmentTensor(t::AbstractTensorMap)

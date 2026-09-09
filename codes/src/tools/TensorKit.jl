@@ -8,10 +8,10 @@ rightorth(A::AbstractTensorMap) = right_orth(A)
 function TensorKit.dim(A::AbstractTensorMap{<:Union{Float64, ComplexF64}, F}, i::Int64) where F<:GradedSpace
      rcod = numout(A)
      if i ≤ rcod[1]
-          D = mapreduce(i -> codomain(A).spaces[i].dims[i], +, eachindex(codomain(A).spaces[i].dims))
+          D = mapreduce(c -> codomain(A).spaces[i].dims[c], +, eachindex(codomain(A).spaces[i].dims))
           DD = dim(codomain(A).spaces[i])
      else
-          D = mapreduce(i -> domain(A).spaces[i - rcod].dims[i], +, eachindex(domain(A).spaces[i - rcod].dims))
+          D = mapreduce(c -> domain(A).spaces[i - rcod].dims[c], +, eachindex(domain(A).spaces[i - rcod].dims))
           DD = dim(domain(A).spaces[i - rcod])
      end
     return D, DD

@@ -1,5 +1,5 @@
 using MKL, TensorKit, JLD2, FiniteLattices, TimerOutputs, KrylovKit, SerializedElementArrays
-import LinearAlgebra: BLAS, cross, diagm
+import LinearAlgebra: BLAS, cross, diagm, axpy!, axpby!, normalize!
 import Statistics: std
 
 include("Globals.jl")

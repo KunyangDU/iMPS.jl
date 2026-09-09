@@ -1,5 +1,5 @@
 
-function tsvd(A::CompositeMPSTensor{2, 4}; direction::Symbol=:center, kwargs...) where {R}
+function tsvd(A::CompositeMPSTensor{2, 4}; direction::Symbol=:center, kwargs...)
     @assert direction in [:center,:left,:right]
     trunc = get(kwargs,:trunc,TruncationScheme())[:]
     U,S,V,ϵ = tsvd(A.A,(1,2),(3,4);trunc = trunc)

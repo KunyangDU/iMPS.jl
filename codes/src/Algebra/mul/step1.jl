@@ -11,15 +11,17 @@ function mul!(EnvAB::Environment{3}, α::Number, Alg::Algebraalgo{SingleSite,alg
         if alg <: CBEalgo 
             cbeinfo = CBEinfo(L2R())
             @timeit localto "CBE_AB" cbetoAB = CBE!(EnvAB, Alg.alg, cbeinfo)
-            merge!(localinfo,cbeinfo)
+            # merge!(localinfo,cbeinfo)
             merge!(localto,cbetoAB,tree_point = ["CBE_AB"])
         end
 
         @timeit localto "projection" projH = proj1(EnvAB,site)
         @timeit localto "action" t = actionb(projH,EnvAB.layer[3][site])
-        @timeit localto "svd" EnvAB.layer[1][site],tr,localinfo.truncerr,localinfo.bond = tsvd(rmul!(t', α); direction=:right,trunc = Alg.trunc)
-        EnvAB.layer[1][site+1] = splice(tr,EnvAB.layer[1][site+1])
-        EnvAB.layer[1].center .+= 1
+        Norm = normalize!(rmul!(t, α))
+        @timeit localto "svd" EnvAB.layer[1][site],tr,localinfo.truncerr,localinfo.bond = tsvd(t'; direction=:right,trunc = Alg.trunc)
+        normalize!(tr)
+        EnvAB.layer[1][site+1] = splice(rmul!(tr, Norm),EnvAB.layer[1][site+1])
+        canonicalize!!(EnvAB.layer[1],site+1)
         @timeit localto "push right" canonicalize!(EnvAB, site+1)
 
         x = composite((EnvAB.layer[1][site:site+1])...)
@@ -44,15 +46,17 @@ function mul!(EnvAB::Environment{3}, α::Number, Alg::Algebraalgo{SingleSite,alg
         if alg <: CBEalgo 
             cbeinfo = CBEinfo(R2L())
             @timeit localto "CBE_AB" cbetoAB = CBE!(EnvAB, Alg.alg, cbeinfo)
-            merge!(localinfo,cbeinfo)
+            # merge!(localinfo,cbeinfo)
             merge!(localto,cbetoAB,tree_point = ["CBE_AB"])
         end
 
         @timeit localto "projection" projH = proj1(EnvAB,site)
         @timeit localto "action" t = actionb(projH,EnvAB.layer[3][site])
-        @timeit localto "svd" tl,EnvAB.layer[1][site],localinfo.truncerr,localinfo.bond = tsvd(rmul!(t', α); direction=:left,trunc = Alg.trunc)
-        EnvAB.layer[1][site-1] = splice(EnvAB.layer[1][site-1],tl)
-        EnvAB.layer[1].center .-= 1
+        Norm = normalize!(rmul!(t, α))
+        @timeit localto "svd" tl,EnvAB.layer[1][site],localinfo.truncerr,localinfo.bond = tsvd(t'; direction=:left,trunc = Alg.trunc)
+        normalize!(tl)
+        EnvAB.layer[1][site-1] = splice(EnvAB.layer[1][site-1],rmul!(tl, Norm))
+        canonicalize!!(EnvAB.layer[1],site-1)
         @timeit localto "push left" canonicalize!(EnvAB,site-1)
 
         x = composite((EnvAB.layer[1][site-1:site])...)

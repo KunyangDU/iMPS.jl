@@ -2,7 +2,8 @@ abstract type AbstractTensorWrapper end
 
 abstract type AbstractMPSTensor <: AbstractTensorWrapper end
 abstract type AbstractMPOTensor <: AbstractTensorWrapper end
-abstract type AbstractEnvironmentTensor <: AbstractTensorWrapper end
+
+abstract type AbstractEnvironmentTensor end
 
 abstract type AbstractLeftEnvironmentTensor <: AbstractEnvironmentTensor end
 abstract type AbstractRightEnvironmentTensor <: AbstractEnvironmentTensor end

@@ -20,14 +20,6 @@ end
 
 _getdim(trunc::TruncationScheme) = trunc.truncdim
 _getcutoff(trunc::TruncationScheme) = trunc.truncbelow
-# _getcutoff(trunc::TruncationScheme) = trunc.truncbelow == 0.0 ? nothing : trunc.truncbelow 
-# _!getdim(trunc::TruncationScheme) = filter(x -> typeof(x) != TensorKit.TruncationDimension, collect(trunc.truncations))
-# function _updatedim(trunc::TruncationScheme,ratio::Number)
-#     trunc.truncdim = ceil(Int64,trunc.truncdim*ratio)
-#     return trunc
-# end
-
-# _getdim(trunc::TruncationScheme) = trunc.truncdim
 truncdim(trunc::TruncationScheme,ratio::Number) = TruncationScheme(ceil(Int64,trunc.truncdim*ratio))
 truncdim(trunc::TruncationScheme) = TruncationScheme(trunc.truncdim)
 

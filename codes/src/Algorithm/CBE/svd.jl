@@ -22,7 +22,11 @@ function randSVD!(env::CBEenvironment, alg::CBEalgo,info::CBEinfo{L2R})
     @timeit localto "leftorth" Q,~ = leftorth(Q)
     @timeit localto "splice Q'" L_trunc = splice(env.Lorth,Q')
     @timeit localto "contract_Lt*RO" obj = contract(L_trunc, env.Rorth, env.lm)
-    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(obj';direction = :left,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
+    # if norm(obj) / norm(env.tL₀) < alg.tol
+    #     env.tL, env.tR = env.tL₀, env.tR₀
+    #     return localto
+    # end
+    @timeit localto "SVD" ~,tR′,info.err,info.bond = tsvd(rmul!(obj', 1 / norm(env.tL₀));direction = :left,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
 
     @timeit localto "oplus" begin 
         tL′, tR′ = _rexpand(env.tL₀, tR′)
@@ -50,7 +54,11 @@ function randSVD!(env::CBEenvironment,alg::CBEalgo,info::CBEinfo{R2L})
     @timeit localto "rightorth" ~,Q = rightorth(Q)
     @timeit localto "splice Q'" R_trunc = splice(env.Rorth,Q')
     @timeit localto "contract_LO*Rt" obj = contract(env.Lorth, R_trunc, env.lm)
-    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(obj';direction = :right,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
+    # if norm(obj) / norm(env.tR₀) < alg.tol
+    #     env.tL, env.tR = env.tL₀, env.tR₀
+    #     return localto
+    # end
+    @timeit localto "SVD" tL′,~,info.err,info.bond = tsvd(rmul!(obj' , 1 / norm(env.tR₀));direction = :right,trunc = truncdim(alg.D - dims(env.tL₀)[2][1]) & truncbelow(alg.tol))
 
     @timeit localto "oplus" begin 
         tL′, tR′ = _lexpand(tL′, env.tR₀)
