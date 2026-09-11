@@ -5,8 +5,10 @@
 # 稀疏累加（多线程）：per-thread 私有累加器 + 末步确定性归约（threaded_reduce!，无锁）。
 function _sparse_actionb_sum(f::Function, validinds)
     accs = Vector{Any}(nothing, get_nworker())
-    threaded_reduce!(validinds, accs; combine! = (x, y) -> axpy!(1, y, x)) do ind, acc, w
-        axpy!(1, f(ind), acc)
+    # 累加用 add!!（外积、类型提升）而非就地 axpy!：不同项 h 的系数实/复可混用（如 Kitaev），
+    # 首项把 acc 定型为窄类型后，后续宽类型项就地写会 InexactError（与 _wsum 的提升同理）。
+    threaded_reduce!(validinds, accs; combine! = (x, y) -> add!!(x, y)) do ind, acc, w
+        add!!(acc, f(ind))
     end
 end
 

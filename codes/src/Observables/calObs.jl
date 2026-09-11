@@ -122,7 +122,7 @@ function _calObs_threading!(Obs::InteractionGraph, obj::Union{DenseMPO,DenseMPS}
                 remain -= count
                 # remain = total - dictsize(Obs.values)
                 merge!(to, tm)
-                if remain % showspacing == 0
+                if remain % showspacing == 0 && remain ≠ total
                     show(to, title="$(total - remain)/$(total)")
                     print("\n")
                     flush(stdout)
